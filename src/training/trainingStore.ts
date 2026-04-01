@@ -7,7 +7,7 @@ import { getWeapon } from './weapons'
 import { useRosterStore } from '../rosterStore'
 
 const INPUT_SIZE = 6
-const HIDDEN_SIZE = 8
+const HIDDEN_SIZE = 12
 const OUTPUT_SIZE = 4
 const WEIGHT_COUNT = NeuralNet.weightCount(INPUT_SIZE, HIDDEN_SIZE, OUTPUT_SIZE)
 const GA = new GeneticAlgorithm(30, 6, 0.2, 0.6, 0.35)
@@ -155,7 +155,8 @@ export const useTrainingStore = create<TrainingStore>((set, get) => ({
         const nextPop = GA.evolve(state.population, fitnesses, state.generation)
         const nextGen = state.generation + 1
         const weaponDef = getWeapon(state.selectedWeapon!)
-        const graduated = newBest >= (weaponDef?.fitnessThreshold ?? 1)
+        const MIN_GENERATIONS = 5
+        const graduated = nextGen >= MIN_GENERATIONS && newBest >= (weaponDef?.fitnessThreshold ?? 1)
 
         nn.setWeights(nextPop[0])
         const newSim = initSim(simConfig)

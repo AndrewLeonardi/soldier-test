@@ -57,6 +57,14 @@ const grenadeGeo = new SphereGeometry(0.07, 8, 8)
 const grenadeGreenMat = new MeshStandardMaterial({ color: 0x3d5a2f, roughness: 0.4 })
 const grenadeTanMat = new MeshStandardMaterial({ color: 0x6b5a2f, roughness: 0.4 })
 
+// Shared geometry — rockets
+const rocketBodyGeo = new CylinderGeometry(0.04, 0.025, 0.25, 6)
+const rocketNoseGeo = new CylinderGeometry(0.005, 0.04, 0.08, 6) // cone-ish
+const rocketBodyMat = new MeshStandardMaterial({ color: 0x444444, roughness: 0.3, metalness: 0.3 })
+const rocketNoseMat = new MeshStandardMaterial({ color: 0xcc0000, roughness: 0.4 })
+const rocketExhaustMat = new MeshBasicMaterial({ color: 0xff6600, transparent: true, opacity: 0.9 })
+const rocketTrailMat = new MeshBasicMaterial({ color: 0x888888, transparent: true, opacity: 0.3 })
+
 // Shared geometry — debris & effects
 const debrisGeos = [
   new BoxGeometry(0.06, 0.06, 0.06),
@@ -138,6 +146,53 @@ export class ProjectileManager {
       alive: true,
       exploded: false,
       mesh,
+      team,
+    })
+  }
+
+  spawnRocket(origin: Vector3, direction: Vector3, team: 'green' | 'tan') {
+    // Build rocket mesh group
+    const grp = new Group()
+    const body = new Mesh(rocketBodyGeo, rocketBodyMat)
+    body.rotateX(Math.PI / 2)
+    grp.add(body)
+    const nose = new Mesh(rocketNoseGeo, rocketNoseMat)
+    nose.position.z = 0.16
+    nose.rotateX(Math.PI / 2)
+    grp.add(nose)
+    const exhaust = new Mesh(new SphereGeometry(0.06, 6, 6), rocketExhaustMat.clone())
+    exhaust.position.z = -0.15
+    grp.add(exhaust)
+    const trail = new Mesh(new SphereGeometry(0.1, 6, 6), rocketTrailMat.clone())
+    trail.position.z = -0.25
+    grp.add(trail)
+
+    grp.position.copy(origin)
+    grp.lookAt(origin.clone().add(direction))
+    this.group.add(grp)
+
+    // Compute ballistic arc: use ideal elevation for distance
+    const dist = Math.sqrt(direction.x * direction.x + direction.z * direction.z)
+    const g = 9
+    const v = 8
+    const ratio = (g * dist) / (v * v)
+    const elevation = ratio <= 1 ? 0.5 * Math.asin(Math.min(1, ratio)) : 0.4
+    const flatDir = direction.clone().normalize()
+    const cosEl = Math.cos(elevation)
+    const sinEl = Math.sin(elevation)
+    const vel = new Vector3(
+      flatDir.x * v * cosEl,
+      v * sinEl,
+      flatDir.z * v * cosEl,
+    )
+
+    this.grenades.push({
+      position: origin.clone(),
+      velocity: vel,
+      age: 0,
+      alive: true,
+      exploded: false,
+      mesh: grp,
       team,
     })
   }

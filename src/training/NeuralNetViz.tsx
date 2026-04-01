@@ -4,7 +4,7 @@ import { NeuralNet } from './neuralNet'
 const INPUT_LABELS = ['Dist', 'Angle', 'Tgt X', 'Tgt Z', 'Cooldown', 'Alive']
 const OUTPUT_LABELS = ['Turn', 'Elevate', 'FIRE', 'Move']
 const INPUT_SIZE = 6
-const HIDDEN_SIZE = 8
+const HIDDEN_SIZE = 12
 const OUTPUT_SIZE = 4
 
 /**
@@ -173,9 +173,9 @@ function computeActivations(nn: NeuralNet, weights: number[]) {
   // Compute hidden layer activations manually
   const hidden: number[] = []
   let offset = 0
-  for (let h = 0; h < 8; h++) {
+  for (let h = 0; h < HIDDEN_SIZE; h++) {
     let sum = 0
-    for (let i = 0; i < 6; i++) {
+    for (let i = 0; i < INPUT_SIZE; i++) {
       sum += inputs[i] * weights[offset++]
     }
     sum += weights[offset++]

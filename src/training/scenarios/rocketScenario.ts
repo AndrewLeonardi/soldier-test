@@ -1,25 +1,30 @@
 import { TrainingTarget, TrainingProjectile } from '../../types'
 
 /**
- * Rocket Launcher Training — Hybrid approach
+ * Rocket Launcher Training — v4 (NERO-inspired hybrid)
  *
- * BASE BEHAVIOR (free):
- *   - Soldier auto-faces the nearest alive target
- *   - Fires when the net says to
+ * KEY INSIGHT (from UT Austin NERO research):
+ * Don't make the net learn physics. Script the aiming, let the net learn decisions.
+ *
+ * SCRIPTED (free):
+ *   - Auto-face nearest target
+ *   - Compute ideal elevation from ballistics formula
+ *   - Fire mechanics
  *
  * NEURAL NET LEARNS:
- *   - Aim offset (fine-tune left/right from auto-aim)
- *   - Elevation angle (must learn the arc for different distances)
- *   - When to fire (timing/confidence)
+ *   - Aim offset correction (fine-tune the scripted aim)
+ *   - Elevation correction (adjust the computed arc)
+ *   - Fire confidence (when to pull the trigger)
+ *   - Target selection bias (net can shift aim toward other targets)
  *
- * This means Gen 1 = soldier faces targets but rockets go wild
- * because elevation is random. Over training, it learns the arc.
+ * This means Gen 1 = rockets go roughly toward targets but with random
+ * corrections. The net learns to REFINE, not to discover physics.
  */
 
 const ROCKET_SPEED = 8
-const ROCKET_GRAVITY = -9
-const ROCKET_COOLDOWN = 1.8
-const BLAST_RADIUS = 1.3
+const ROCKET_GRAVITY = 9 // positive for the formula, negated in physics
+const ROCKET_COOLDOWN = 1.5
+const BLAST_RADIUS = 1.5
 const TARGET_RADIUS = 0.45
 
 export interface RocketSimState {
@@ -35,13 +40,21 @@ export interface RocketSimState {
   closestApproach: Record<string, number>
 }
 
+/** Ballistics: compute ideal launch elevation for a given distance */
+function idealElevation(distance: number): number {
+  // θ = 0.5 * arcsin(g * d / v²)
+  const ratio = (ROCKET_GRAVITY * distance) / (ROCKET_SPEED * ROCKET_SPEED)
+  if (ratio > 1 || ratio < -1) return 0.4 // out of range, use 45-ish degrees
+  return 0.5 * Math.asin(Math.min(1, Math.max(-1, ratio)))
+}
+
 export function createRocketTargets(): TrainingTarget[] {
   return [
-    { id: 't1', position: [4, 0, 0], velocity: [0, 0, 0], alive: true, radius: TARGET_RADIUS },
-    { id: 't2', position: [6, 0, 2.5], velocity: [0, 0, 0], alive: true, radius: TARGET_RADIUS },
-    { id: 't3', position: [5, 0, -2.5], velocity: [0, 0, 0], alive: true, radius: TARGET_RADIUS },
-    { id: 't4', position: [8, 0, 1], velocity: [0, 0, 0], alive: true, radius: TARGET_RADIUS },
-    { id: 't5', position: [7, 0, -1.5], velocity: [0, 0, 0], alive: true, radius: TARGET_RADIUS },
+    { id: 't1', position: [3.5, 0, 0.5], velocity: [0, 0, 0], alive: true, radius: TARGET_RADIUS },
+    { id: 't2', position: [4, 0, -0.8], velocity: [0, 0, 0], alive: true, radius: TARGET_RADIUS },
+    { id: 't3', position: [5.5, 0, 2], velocity: [0, 0, 0], alive: true, radius: TARGET_RADIUS },
+    { id: 't4', position: [5, 0, -2.5], velocity: [0, 0, 0], alive: true, radius: TARGET_RADIUS },
+    { id: 't5', position: [7.5, 0, 0], velocity: [0, 0, 0], alive: true, radius: TARGET_RADIUS },
   ]
 }
 
@@ -74,15 +87,17 @@ export function getRocketInputs(state: RocketSimState): number[] {
     if (dist < nearestDist) { nearestDist = dist; nearest = t }
   }
 
+  // Compute the IDEAL elevation from physics
+  const ideal = idealElevation(nearestDist)
   const aliveCount = targets.filter(t => t.alive).length
 
   return [
-    nearest.position[0] / 10,                     // target X
-    nearest.position[2] / 5,                       // target Z
-    Math.min(1, nearestDist / 10),                 // distance
+    nearest.position[0] / 10,                     // target X (normalized)
+    nearest.position[2] / 5,                       // target Z (normalized)
+    Math.min(1, nearestDist / 10),                 // distance (normalized)
+    ideal / 0.8,                                   // ideal elevation (normalized ~0-1)
     Math.min(1, weaponCooldown / ROCKET_COOLDOWN), // cooldown
-    aliveCount / 5,                                // targets left
-    Math.min(1, time / 6),                         // time elapsed
+    aliveCount / 5,                                // targets remaining
   ]
 }
 
@@ -93,7 +108,7 @@ export function applyRocketOutputs(
 ): void {
   const { soldierPos, targets } = state
 
-  // ── AUTO-AIM: face the nearest alive target (FREE) ──
+  // ── SCRIPTED: auto-face nearest alive target ──
   let nearest = targets[0]
   let nearestDist = 999
   for (const t of targets) {
@@ -108,22 +123,24 @@ export function applyRocketOutputs(
   const dz = nearest.position[2] - soldierPos[2]
   const baseAngle = Math.atan2(dx, dz)
 
-  // ── NEURAL NET OUTPUT[0]: aim offset (fine-tune angle) ──
-  // Maps [-1, 1] → [-0.3, 0.3] radians (~17 degrees each way)
-  const aimOffset = outputs[0] * 0.3
-  const finalAngle = baseAngle + aimOffset
+  // ── SCRIPTED: compute ideal elevation from ballistics ──
+  const baseElevation = idealElevation(nearestDist)
+
+  // ── NET OUTPUT[0]: aim offset correction ──
+  // Small range: [-0.2, 0.2] radians (~11 degrees)
+  const aimCorrection = outputs[0] * 0.2
+  const finalAngle = baseAngle + aimCorrection
   state.soldierAngle = finalAngle
 
-  // ── NEURAL NET OUTPUT[1]: elevation (MUST LEARN THIS) ──
-  // Maps [-1, 1] → [0.1, 0.7] radians
-  // Low elevation = flat shot (close targets)
-  // High elevation = arced shot (far targets)
-  const elevation = (outputs[1] + 1) * 0.5 * 0.6 + 0.1
+  // ── NET OUTPUT[1]: elevation correction ──
+  // Small range: [-0.15, 0.15] radians on top of the ideal
+  const elevationCorrection = outputs[1] * 0.15
+  const finalElevation = Math.max(0.05, Math.min(0.8, baseElevation + elevationCorrection))
 
-  // ── NEURAL NET OUTPUT[2]: fire trigger ──
+  // ── NET OUTPUT[2]: fire trigger ──
   if (outputs[2] > 0 && state.weaponCooldown <= 0) {
-    const cosEl = Math.cos(elevation)
-    const sinEl = Math.sin(elevation)
+    const cosEl = Math.cos(finalElevation)
+    const sinEl = Math.sin(finalElevation)
     const dir = [
       Math.sin(finalAngle) * cosEl,
       sinEl,
@@ -158,7 +175,8 @@ export function tickRocketProjectiles(state: RocketSimState, dt: number): void {
     if (!p.alive) continue
     p.age += dt
 
-    p.velocity[1] += ROCKET_GRAVITY * dt
+    // Gravity (negative Y)
+    p.velocity[1] -= ROCKET_GRAVITY * dt
     p.position[0] += p.velocity[0] * dt
     p.position[1] += p.velocity[1] * dt
     p.position[2] += p.velocity[2] * dt
@@ -216,32 +234,32 @@ export function tickRocketProjectiles(state: RocketSimState, dt: number): void {
 export function scoreRocketFitness(state: RocketSimState): number {
   const destroyed = state.targets.filter(t => !t.alive).length
 
-  // ── HITS: the main event ──
+  // Hits dominate
   let fitness = destroyed * 200
 
-  // ── CLOSE APPROACHES: smooth gradient for learning ──
+  // Close approaches for gradient
   for (const t of state.targets) {
     if (!t.alive) continue
     const closest = state.closestApproach[t.id] ?? 999
     if (closest < 4) {
-      fitness += (4 - closest) * 8 // max 32 per target
+      fitness += (4 - closest) * 8
     }
   }
 
-  // ── FIRING REWARD: must fire to score ──
+  // Firing reward
   fitness += Math.min(state.rocketsFireD, 5) * 5
 
-  // ── ACCURACY BONUS ──
+  // Accuracy bonus
   if (state.rocketsHit > 0 && state.rocketsFireD > 0) {
-    fitness += (state.rocketsHit / state.rocketsFireD) * 40
+    fitness += (state.rocketsHit / state.rocketsFireD) * 50
   }
 
-  // ── SPAM PENALTY: only for excessive fire ──
+  // Spam penalty
   if (state.rocketsFireD > 7) {
     fitness -= (state.rocketsFireD - 7) * 10
   }
 
-  // Normalize: 5 × 200 hits + bonuses ≈ 1200 max
-  // Threshold 0.7 = 840 → need 3-4 target kills with decent accuracy
+  // Normalize: 5 × 200 + bonuses ≈ 1200
+  // Threshold 0.6 = 720 → need 3+ targets with some bonus
   return Math.max(0, fitness) / 1200
 }

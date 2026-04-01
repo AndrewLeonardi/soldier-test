@@ -224,8 +224,8 @@ export function Battlefield() {
             player.state = 'firing'
             player.stateAge = 0
             const muzzle = pPos.clone(); muzzle.y += 0.9
-            const dir = ePos.clone().sub(pPos).normalize()
-            proj.spawnGrenade(muzzle, dir, 'green')
+            const dir = ePos.clone().sub(pPos)
+            proj.spawnRocket(muzzle, dir, 'green')
           } else if (player.stateAge > 0.5) {
             player.state = 'idle'
           }
