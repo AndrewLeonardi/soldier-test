@@ -18,8 +18,9 @@ interface Grenade {
   age: number
   alive: boolean
   exploded: boolean
-  mesh: Mesh
+  mesh: Mesh | Group
   team: 'green' | 'tan'
+  isRocket?: boolean
 }
 
 interface Debris {
@@ -194,6 +195,7 @@ export class ProjectileManager {
       exploded: false,
       mesh: grp,
       team,
+      isRocket: true,
     })
   }
 
@@ -312,7 +314,7 @@ export class ProjectileManager {
       }
     }
 
-    // ── Grenades ──
+    // ── Grenades & Rockets ──
     for (const g of this.grenades) {
       if (!g.alive) continue
       g.age += delta
@@ -322,32 +324,59 @@ export class ProjectileManager {
         g.velocity.y += GRAVITY * delta
         g.position.add(g.velocity.clone().multiplyScalar(delta))
 
-        // Bounce off ground
-        if (g.position.y < 0.07) {
-          g.position.y = 0.07
-          g.velocity.y *= -0.3
-          g.velocity.x *= 0.6
-          g.velocity.z *= 0.6
+        let shouldExplode = false
+
+        if (g.isRocket) {
+          // ROCKETS: orient along velocity, explode on ground contact or target hit
+          g.mesh.position.copy(g.position)
+          if (g.velocity.length() > 0.1) {
+            const target = g.position.clone().add(g.velocity)
+            g.mesh.lookAt(target)
+          }
+          // Explode on ground impact
+          if (g.position.y < 0.15) {
+            shouldExplode = true
+          }
+          // Explode on direct target hit
+          for (const target of targets) {
+            if (!target.alive || target.team === g.team) continue
+            const dist = g.position.distanceTo(target.position)
+            if (dist < 0.8) {
+              shouldExplode = true
+              break
+            }
+          }
+        } else {
+          // GRENADES: bounce off ground, tumble, fuse timer
+          if (g.position.y < 0.07) {
+            g.position.y = 0.07
+            g.velocity.y *= -0.3
+            g.velocity.x *= 0.6
+            g.velocity.z *= 0.6
+          }
+          g.mesh.position.copy(g.position)
+          g.mesh.rotation.x += delta * 8
+          g.mesh.rotation.z += delta * 5
+          if (g.age > GRENADE_FUSE) {
+            shouldExplode = true
+          }
         }
 
-        g.mesh.position.copy(g.position)
-        g.mesh.rotation.x += delta * 8
-        g.mesh.rotation.z += delta * 5
-
-        // Fuse timer → EXPLODE
-        if (g.age > GRENADE_FUSE) {
+        if (shouldExplode) {
           g.exploded = true
           this.group.remove(g.mesh)
           this.spawnExplosionFlash(g.position)
 
           // Damage + knockback units in blast radius
+          const blastDamage = g.isRocket ? 90 : 60 // rockets hit harder
+          const blastRadius = g.isRocket ? GRENADE_BLAST_RADIUS * 1.2 : GRENADE_BLAST_RADIUS
           for (const target of targets) {
             if (!target.alive) continue
             if (target.team === g.team) continue
             const dist = g.position.distanceTo(target.position)
-            if (dist < GRENADE_BLAST_RADIUS) {
-              const force = (GRENADE_BLAST_RADIUS - dist) / GRENADE_BLAST_RADIUS
-              const damage = Math.round(60 * force)
+            if (dist < blastRadius) {
+              const force = (blastRadius - dist) / blastRadius
+              const damage = Math.round(blastDamage * force)
               const launchDir = target.position.clone().sub(g.position).normalize()
               launchDir.y = 0.4 + force * 0.3
               const launchVel = launchDir.multiplyScalar(force * 6)
