@@ -19,7 +19,35 @@ export interface Unit {
   lastGrenadeTime: number
   targetId: string | null
   facingAngle: number
-  spinSpeed: number // tumble spin when launched
+  spinSpeed: number
+  // Roster integration
+  profileId?: string          // links to SoldierProfile
+  equippedWeapon?: WeaponType // what weapon this unit has
+}
+
+// ── Soldier Roster ──────────────────────────────────────
+
+export interface SoldierProfile {
+  id: string
+  name: string
+  skills: Partial<Record<WeaponType, TrainedBrain>>
+  equippedWeapon: WeaponType
+  status: 'ready' | 'injured'
+  injuredUntilRound: number
+  battlesWon: number
+  kills: number
+}
+
+export const WEAPON_COSTS: Record<WeaponType, number> = {
+  rifle: 100,
+  rocketLauncher: 200,
+  machineGun: 150,
+}
+
+export const WEAPON_ICONS: Record<WeaponType, string> = {
+  rifle: '\u{1F52B}',
+  rocketLauncher: '\u{1F680}',
+  machineGun: '\u{2694}',
 }
 
 export interface WaveConfig {

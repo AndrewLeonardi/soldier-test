@@ -110,6 +110,34 @@
 }
 .loadout-weapon-card.trained { border-color: rgba(76,175,80,0.3); }
 
+/* Soldier picker */
+.soldier-picker {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-bottom: 8px;
+}
+.soldier-pick-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 10px;
+  background: rgba(255,255,255,0.04);
+  border: 2px solid transparent;
+  border-radius: 8px;
+  cursor: pointer;
+  color: #aaa;
+  font-size: 13px;
+  transition: all 0.1s;
+}
+.soldier-pick-btn:hover { background: rgba(255,255,255,0.08); color: white; }
+.soldier-pick-btn.selected {
+  border-color: #FFD700;
+  background: rgba(255,215,0,0.1);
+  color: #FFD700;
+}
+.soldier-pick-name { font-weight: 700; }
+
 .weapon-icon { font-size: 28px; }
 .weapon-info { flex: 1; }
 .weapon-name {

@@ -184,6 +184,35 @@
 
 /* ── Battle Button ───────────────────────────────────── */
 
+.placement-card.soldier-card {
+  border-color: #4CAF50;
+  background: linear-gradient(180deg, #f0fff0 0%, #e0f0e0 100%);
+}
+
+.placement-divider {
+  width: 2px;
+  height: 50px;
+  background: rgba(0,0,0,0.2);
+  border-radius: 1px;
+  align-self: center;
+}
+
+.roster-link-btn {
+  padding: 10px 16px;
+  background: linear-gradient(180deg, #455A64 0%, #37474F 100%);
+  border: 2px solid #78909C;
+  border-radius: 12px;
+  color: white;
+  font-size: 12px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  cursor: pointer;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+  transition: all 0.15s;
+}
+.roster-link-btn:hover { transform: translateY(-2px); }
+
 .training-nav-btn {
   padding: 10px 20px;
   background: linear-gradient(180deg, #7C4DFF 0%, #512DA8 100%);

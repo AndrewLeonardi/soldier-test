@@ -1,24 +1,64 @@
 import { useGameStore } from '../store'
-import { PLACEMENT_OPTIONS } from '../types'
-
-const ROTATION_LABELS = ['Right', 'Down', 'Left', 'Up']
+import { useRosterStore } from '../rosterStore'
+import { PLACEMENT_OPTIONS, WEAPON_ICONS, WEAPON_COSTS, SoldierProfile } from '../types'
 
 export function PlacementBar() {
   const phase = useGameStore(s => s.phase)
-  const gold = useGameStore(s => s.gold)
+  const gold = useRosterStore(s => s.gold)
   const selectedPlacement = useGameStore(s => s.selectedPlacement)
   const placementRotation = useGameStore(s => s.placementRotation)
   const selectPlacement = useGameStore(s => s.selectPlacement)
   const rotatePlacement = useGameStore(s => s.rotatePlacement)
   const startBattle = useGameStore(s => s.startBattle)
+  const placedSoldierIds = useGameStore(s => s.placedSoldierIds)
+
+  const soldiers = useRosterStore(s => s.soldiers)
 
   if (phase !== 'planning') return null
+
+  // Filter soldiers: ready + not already placed
+  const availableSoldiers = soldiers.filter(s =>
+    s.status === 'ready' && !placedSoldierIds.includes(s.id)
+  )
+
+  // Defense-only options (no generic soldier)
+  const defenseOptions = PLACEMENT_OPTIONS.filter(o => o.type !== 'soldier')
 
   const rotIdx = Math.round(placementRotation / (Math.PI / 2)) % 4
 
   return (
     <div className="placement-bar">
-      {PLACEMENT_OPTIONS.map(opt => {
+      {/* Squad soldiers */}
+      {availableSoldiers.map(soldier => {
+        const cost = WEAPON_COSTS[soldier.equippedWeapon]
+        const canAfford = gold >= cost
+        const isSelected = selectedPlacement === `soldier:${soldier.id}`
+        return (
+          <div
+            key={soldier.id}
+            className={`placement-card soldier-card ${isSelected ? 'selected' : ''} ${!canAfford ? 'disabled' : ''}`}
+            onClick={() => {
+              if (!canAfford) return
+              selectPlacement(isSelected ? null : `soldier:${soldier.id}` as any)
+            }}
+          >
+            <span className="placement-card-icon">{WEAPON_ICONS[soldier.equippedWeapon]}</span>
+            <span className="placement-card-name">{soldier.name}</span>
+            <span className="placement-card-cost">
+              <span className="coin" />
+              {cost}
+            </span>
+          </div>
+        )
+      })}
+
+      {/* Separator */}
+      {availableSoldiers.length > 0 && defenseOptions.length > 0 && (
+        <div className="placement-divider" />
+      )}
+
+      {/* Defense options */}
+      {defenseOptions.map(opt => {
         const canAfford = gold >= opt.cost
         const isSelected = selectedPlacement === opt.type
         return (
@@ -53,8 +93,8 @@ export function PlacementBar() {
         </div>
       )}
 
-      <button className="training-nav-btn" onClick={() => { window.location.hash = '#/training' }}>
-        {'\u{1F9E0}'} Train
+      <button className="roster-link-btn" onClick={() => { window.location.hash = '#/roster' }}>
+        {'\u{1F465}'} Squad
       </button>
 
       <button className="battle-btn" onClick={startBattle}>

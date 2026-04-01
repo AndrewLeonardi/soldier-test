@@ -2,6 +2,8 @@ import { useRef, useMemo, useEffect } from 'react'
 import { useFrame } from '@react-three/fiber'
 import * as THREE from 'three'
 import { createFlexSoldier, poseIdle, poseWalk, poseAim, poseShoot, poseHit, poseDeath, poseRush, poseThrow } from './models/flexSoldier.js'
+import { poseRocketKneel, poseRocketFire } from './models/weaponPoses.js'
+import { attachWeapon } from './models/weaponModels.js'
 import { PoseBlender } from './models/poseBlender.js'
 import { TOY } from './models/materials.js'
 import { Unit } from './types'
@@ -16,19 +18,27 @@ export function SoldierUnit({ unit }: SoldierUnitProps) {
   const blenderRef = useRef(new PoseBlender())
   const elapsedRef = useRef(0)
   const prevState = useRef(unit.state)
-  // Tumble tracking for ragdoll
   const tumbleRef = useRef({ rx: 0, rz: 0 })
+  const weaponAttached = useRef(false)
 
   const color = unit.team === 'green' ? TOY.armyGreen : TOY.tan
 
   useMemo(() => {
     const soldier = createFlexSoldier(color)
     soldierRef.current = soldier
+    weaponAttached.current = false
   }, [color])
 
   useEffect(() => {
     if (groupRef.current && soldierRef.current) {
       groupRef.current.add(soldierRef.current.group)
+
+      // Attach weapon if equipped
+      if (unit.equippedWeapon && unit.equippedWeapon !== 'rifle') {
+        attachWeapon(soldierRef.current.parts, unit.equippedWeapon, color)
+        weaponAttached.current = true
+      }
+
       return () => { groupRef.current?.remove(soldierRef.current!.group) }
     }
   }, [])
@@ -41,48 +51,43 @@ export function SoldierUnit({ unit }: SoldierUnitProps) {
     const t = elapsedRef.current
     const parts = soldier.parts
 
-    // Position — lerp toward target (fast when on ground, instant when airborne)
+    // Position
     const isAirborne = unit.position[1] > 0.1 || Math.abs(unit.velocity[1]) > 0.5
     const lerpSpeed = isAirborne ? 20 : 8
     const target = new THREE.Vector3(...unit.position)
     groupRef.current.position.lerp(target, Math.min(1, delta * lerpSpeed))
 
-    // Facing — normal rotation when alive, tumble when ragdolling
+    // Rotation
     const isRagdolling = unit.spinSpeed > 0.1
     if (isRagdolling) {
-      // Wild tumbling!
       tumbleRef.current.rx += unit.spinSpeed * delta * 3
       tumbleRef.current.rz += unit.spinSpeed * delta * 2.3
       groupRef.current.rotation.x = tumbleRef.current.rx
       groupRef.current.rotation.z = tumbleRef.current.rz
-      // Keep some Y rotation for direction
       groupRef.current.rotation.y += unit.spinSpeed * delta * 0.5
     } else {
-      // Normal facing
       const targetRot = unit.facingAngle
-      groupRef.current.rotation.y = THREE.MathUtils.lerp(
-        groupRef.current.rotation.y,
-        targetRot,
-        Math.min(1, delta * 6)
-      )
-      // Settle tumble rotations back to 0
+      groupRef.current.rotation.y = THREE.MathUtils.lerp(groupRef.current.rotation.y, targetRot, Math.min(1, delta * 6))
       tumbleRef.current.rx *= 0.9
       tumbleRef.current.rz *= 0.9
       groupRef.current.rotation.x = tumbleRef.current.rx
       groupRef.current.rotation.z = tumbleRef.current.rz
     }
 
-    // State change → notify blender
+    // State transition
     if (unit.state !== prevState.current) {
       blenderRef.current.notifyStateChange(parts, unit.state, undefined)
       prevState.current = unit.state
     }
 
-    // Apply pose (skip if ragdolling hard — the tumble IS the animation)
+    // Pose — weapon-aware
+    const isRocket = unit.equippedWeapon === 'rocketLauncher'
+
     if (!isRagdolling) {
       switch (unit.state) {
         case 'idle':
-          poseIdle(parts, t)
+          if (isRocket) poseRocketKneel(parts, t)
+          else poseIdle(parts, t)
           break
         case 'walking':
           poseWalk(parts, t, 6)
@@ -91,8 +96,13 @@ export function SoldierUnit({ unit }: SoldierUnitProps) {
           poseRush(parts, t)
           break
         case 'firing': {
-          const fireProgress = Math.min(1, unit.stateAge / 0.4)
-          poseShoot(parts, fireProgress)
+          if (isRocket) {
+            const fireProgress = Math.min(1, unit.stateAge / 0.5)
+            poseRocketFire(parts, fireProgress)
+          } else {
+            const fireProgress = Math.min(1, unit.stateAge / 0.4)
+            poseShoot(parts, fireProgress)
+          }
           break
         }
         case 'throwing': {

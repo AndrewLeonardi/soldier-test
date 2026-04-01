@@ -29,8 +29,9 @@ export function GraduationBanner() {
         <button className="graduation-btn" onClick={() => {
           graduate()
           backToLoadout()
+          window.location.hash = '#/roster'
         }}>
-          Save &amp; Return to Loadout
+          Save &amp; Return to Roster
         </button>
       </div>
     </div>

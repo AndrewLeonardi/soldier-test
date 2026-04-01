@@ -1,0 +1,244 @@
+.roster-page {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+  color: white;
+  overflow: hidden;
+}
+
+.roster-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 20px;
+  background: rgba(0,0,0,0.4);
+  border-bottom: 2px solid rgba(255,255,255,0.1);
+}
+
+.roster-nav-btn {
+  background: none;
+  border: 1px solid rgba(255,255,255,0.3);
+  color: #aaa;
+  padding: 6px 14px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 13px;
+}
+.roster-nav-btn:hover { color: white; border-color: white; }
+
+.roster-title {
+  font-size: 22px;
+  font-weight: 900;
+  letter-spacing: 3px;
+  color: #FFD700;
+  text-shadow: 0 2px 8px rgba(255,215,0,0.3);
+}
+
+.roster-gold {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(0,0,0,0.4);
+  padding: 6px 14px;
+  border-radius: 20px;
+  border: 1px solid rgba(255,215,0,0.3);
+  color: #FFD700;
+  font-weight: 700;
+  font-size: 16px;
+}
+
+.gold-icon {
+  width: 18px; height: 18px;
+  background: radial-gradient(circle at 35% 35%, #ffe066, #FFD700);
+  border-radius: 50%;
+  border: 1.5px solid #cc9900;
+}
+.gold-icon-sm {
+  display: inline-block;
+  width: 14px; height: 14px;
+  background: radial-gradient(circle at 35% 35%, #ffe066, #FFD700);
+  border-radius: 50%;
+  border: 1px solid #cc9900;
+  vertical-align: middle;
+}
+
+/* ── Soldier Grid ──────────────────────────────────── */
+
+.roster-grid {
+  flex: 1;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  padding: 20px;
+  overflow-y: auto;
+  align-content: flex-start;
+  justify-content: center;
+}
+
+.roster-card {
+  width: 180px;
+  background: rgba(255,255,255,0.06);
+  border: 2px solid rgba(255,255,255,0.1);
+  border-radius: 14px;
+  padding: 14px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  position: relative;
+  transition: all 0.15s;
+}
+.roster-card:hover { background: rgba(255,255,255,0.1); border-color: rgba(255,255,255,0.2); }
+.roster-card.injured { opacity: 0.6; }
+
+/* Status badge */
+.roster-status {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  font-size: 8px;
+  font-weight: 800;
+  letter-spacing: 1px;
+  padding: 2px 8px;
+  border-radius: 6px;
+}
+.status-ready { background: rgba(76,175,80,0.3); color: #4CAF50; }
+.status-injured { background: rgba(255,68,68,0.3); color: #FF4444; }
+
+/* Avatar */
+.roster-avatar {
+  position: relative;
+  font-size: 40px;
+  line-height: 1;
+  margin: 4px 0;
+}
+.roster-weapon-badge {
+  position: absolute;
+  bottom: -4px;
+  right: -12px;
+  font-size: 18px;
+  background: rgba(0,0,0,0.6);
+  border-radius: 8px;
+  padding: 2px 4px;
+}
+
+/* Name */
+.roster-name {
+  font-size: 15px;
+  font-weight: 800;
+  letter-spacing: 0.5px;
+}
+
+/* Skills */
+.roster-skills {
+  display: flex;
+  gap: 4px;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+.roster-skill-btn {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  padding: 4px 8px;
+  background: rgba(255,255,255,0.06);
+  border: 1px solid rgba(255,255,255,0.15);
+  border-radius: 6px;
+  color: #aaa;
+  font-size: 11px;
+  cursor: pointer;
+  transition: all 0.1s;
+}
+.roster-skill-btn:hover { border-color: #4CAF50; color: white; }
+.roster-skill-btn.equipped {
+  background: rgba(76,175,80,0.15);
+  border-color: #4CAF50;
+  color: #4CAF50;
+}
+.skill-label { font-size: 9px; font-weight: 700; text-transform: uppercase; }
+.equipped-check { font-size: 10px; }
+
+/* Stats */
+.roster-stats-row {
+  display: flex;
+  gap: 12px;
+  font-size: 10px;
+  color: #666;
+}
+
+/* Actions */
+.roster-actions {
+  width: 100%;
+  margin-top: 4px;
+}
+.roster-train-btn {
+  width: 100%;
+  padding: 8px;
+  background: linear-gradient(180deg, #7C4DFF 0%, #512DA8 100%);
+  border: 2px solid #B388FF;
+  border-radius: 8px;
+  color: white;
+  font-size: 11px;
+  font-weight: 800;
+  cursor: pointer;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  transition: all 0.15s;
+}
+.roster-train-btn:hover { transform: translateY(-1px); }
+.roster-train-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+
+/* Recruit card */
+.roster-recruit {
+  cursor: pointer;
+  border-style: dashed;
+  border-color: rgba(255,255,255,0.2);
+  justify-content: center;
+}
+.roster-recruit:hover { border-color: #FFD700; }
+.roster-recruit.disabled { opacity: 0.3; cursor: not-allowed; }
+.recruit-icon {
+  font-size: 36px;
+  color: #666;
+  font-weight: 300;
+}
+.recruit-label {
+  font-size: 13px;
+  font-weight: 700;
+  color: #888;
+}
+.recruit-cost {
+  font-size: 13px;
+  color: #FFD700;
+  font-weight: 700;
+}
+
+/* ── Footer ──────────────────────────────────────── */
+
+.roster-footer {
+  display: flex;
+  gap: 12px;
+  padding: 12px 20px;
+  background: rgba(0,0,0,0.4);
+  border-top: 1px solid rgba(255,255,255,0.1);
+  justify-content: center;
+}
+.roster-footer-btn {
+  padding: 10px 24px;
+  border-radius: 10px;
+  border: 2px solid rgba(255,255,255,0.2);
+  background: rgba(255,255,255,0.05);
+  color: #ccc;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.roster-footer-btn:hover { border-color: white; color: white; }
+.roster-footer-btn.primary {
+  background: linear-gradient(180deg, #ff5555 0%, #cc2222 100%);
+  border-color: #ff8888;
+  color: white;
+}

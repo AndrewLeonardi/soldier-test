@@ -209,22 +209,40 @@ export function Battlefield() {
         if (d < nearestDist) { nearestDist = d; nearestEnemy = e }
       }
 
-      if (nearestEnemy && nearestDist < stats.range) {
+      const isRocket = player.equippedWeapon === 'rocketLauncher'
+      const effectiveRange = isRocket ? 8 : stats.range
+      const effectiveFireRate = isRocket ? 2.5 : stats.fireRate
+
+      if (nearestEnemy && nearestDist < effectiveRange) {
         const ePos = new THREE.Vector3(...nearestEnemy.position)
         player.facingAngle = Math.atan2(ePos.x - pPos.x, ePos.z - pPos.z)
 
-        // Try grenade occasionally, otherwise shoot
-        if (!tryGrenade(player, ePos, time, proj, 'green')) {
-          if (time - player.lastFireTime > stats.fireRate) {
+        if (isRocket) {
+          // Rocket soldiers fire rockets (arced grenades)
+          if (time - player.lastFireTime > effectiveFireRate) {
             player.lastFireTime = time
             player.state = 'firing'
             player.stateAge = 0
-            const muzzle = pPos.clone(); muzzle.y += 0.8
-            const targetCenter = ePos.clone(); targetCenter.y += 0.5
-            const dir = targetCenter.sub(muzzle).normalize()
-            proj.spawnBullet(muzzle, dir, 'green')
-          } else if (player.stateAge > 0.4) {
+            const muzzle = pPos.clone(); muzzle.y += 0.9
+            const dir = ePos.clone().sub(pPos).normalize()
+            proj.spawnGrenade(muzzle, dir, 'green')
+          } else if (player.stateAge > 0.5) {
             player.state = 'idle'
+          }
+        } else {
+          // Regular soldiers: try grenade occasionally, otherwise shoot
+          if (!tryGrenade(player, ePos, time, proj, 'green')) {
+            if (time - player.lastFireTime > effectiveFireRate) {
+              player.lastFireTime = time
+              player.state = 'firing'
+              player.stateAge = 0
+              const muzzle = pPos.clone(); muzzle.y += 0.8
+              const targetCenter = ePos.clone(); targetCenter.y += 0.5
+              const dir = targetCenter.sub(muzzle).normalize()
+              proj.spawnBullet(muzzle, dir, 'green')
+            } else if (player.stateAge > 0.4) {
+              player.state = 'idle'
+            }
           }
         }
       } else {

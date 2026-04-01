@@ -4,6 +4,7 @@ import { NeuralNet } from './neuralNet'
 import { GeneticAlgorithm } from './geneticAlgorithm'
 import { SimState, SimConfig, initSim, simTick, scoreFitness } from './simulationRunner'
 import { getWeapon } from './weapons'
+import { useRosterStore } from '../rosterStore'
 
 const INPUT_SIZE = 6
 const HIDDEN_SIZE = 8
@@ -12,9 +13,9 @@ const WEIGHT_COUNT = NeuralNet.weightCount(INPUT_SIZE, HIDDEN_SIZE, OUTPUT_SIZE)
 const GA = new GeneticAlgorithm(30, 6, 0.2, 0.6, 0.35)
 
 interface TrainingStore {
-  // Navigation
   screen: 'loadout' | 'arena'
   selectedWeapon: WeaponType | null
+  selectedSoldierId: string | null
 
   // Evolution
   generation: number
@@ -23,7 +24,7 @@ interface TrainingStore {
   fitnesses: number[]
   bestFitness: number
   bestWeights: number[] | null
-  fitnessHistory: number[] // best fitness per generation for graph
+  fitnessHistory: number[]
 
   // Simulation
   simState: SimState | null
@@ -32,18 +33,13 @@ interface TrainingStore {
   simRunning: boolean
   graduated: boolean
 
-  // Neural net instance (reused, weights swapped)
   nn: NeuralNet
-
-  // Compute tokens
   compute: number
-
-  // Trained brains (persisted)
-  trainedBrains: Partial<Record<WeaponType, TrainedBrain>>
 
   // Actions
   setScreen: (s: 'loadout' | 'arena') => void
   selectWeapon: (w: WeaponType) => void
+  selectSoldier: (id: string | null) => void
   startTraining: () => void
   setSimSpeed: (speed: number) => void
   pauseResume: () => void
@@ -52,24 +48,10 @@ interface TrainingStore {
   graduate: () => void
 }
 
-// Load saved brains from localStorage
-function loadBrains(): Partial<Record<WeaponType, TrainedBrain>> {
-  try {
-    const saved = localStorage.getItem('trainedBrains')
-    if (saved) return JSON.parse(saved)
-  } catch { /* ignore */ }
-  return {}
-}
-
-function saveBrains(brains: Partial<Record<WeaponType, TrainedBrain>>) {
-  try {
-    localStorage.setItem('trainedBrains', JSON.stringify(brains))
-  } catch { /* ignore */ }
-}
-
 export const useTrainingStore = create<TrainingStore>((set, get) => ({
   screen: 'loadout',
   selectedWeapon: null,
+  selectedSoldierId: null,
   generation: 0,
   population: [],
   currentIndividual: 0,
@@ -84,12 +66,11 @@ export const useTrainingStore = create<TrainingStore>((set, get) => ({
   graduated: false,
   nn: new NeuralNet(INPUT_SIZE, HIDDEN_SIZE, OUTPUT_SIZE),
   compute: 500,
-  trainedBrains: loadBrains(),
 
   setScreen: (s) => set({ screen: s }),
   selectWeapon: (w) => set({ selectedWeapon: w }),
+  selectSoldier: (id) => set({ selectedSoldierId: id }),
   setSimSpeed: (speed) => set({ simSpeed: speed }),
-
   pauseResume: () => set(s => ({ simRunning: !s.simRunning })),
 
   backToLoadout: () => set({
@@ -111,7 +92,23 @@ export const useTrainingStore = create<TrainingStore>((set, get) => ({
     const def = getWeapon(weapon)
     if (!def) return
 
-    const population = GA.initPopulation(WEIGHT_COUNT)
+    // If soldier already has a brain for this weapon, seed population with it
+    const soldierId = get().selectedSoldierId
+    let population = GA.initPopulation(WEIGHT_COUNT)
+
+    if (soldierId) {
+      const roster = useRosterStore.getState()
+      const soldier = roster.soldiers.find(s => s.id === soldierId)
+      const existingBrain = soldier?.skills[weapon]
+      if (existingBrain && existingBrain.weights.length > 0) {
+        // Seed first few individuals with existing brain + mutations
+        for (let i = 0; i < 5; i++) {
+          population[i] = existingBrain.weights.map(w => w + (Math.random() - 0.5) * 0.2)
+        }
+        population[0] = [...existingBrain.weights] // keep one exact copy
+      }
+    }
+
     const config: SimConfig = { simDuration: def.simDuration, weaponType: weapon }
     const nn = get().nn
     nn.setWeights(population[0])
@@ -141,35 +138,25 @@ export const useTrainingStore = create<TrainingStore>((set, get) => ({
     const { nn, simConfig } = state
     const sim = state.simState
 
-    // Run simulation tick
     simTick(sim, nn, simConfig, dt)
 
-    // Check if attempt is over (time exceeded)
     if (sim.time >= simConfig.simDuration) {
-      // Score this individual
       const fitness = scoreFitness(sim, simConfig)
       const fitnesses = [...state.fitnesses]
       fitnesses[state.currentIndividual] = fitness
 
       const newBest = fitness > state.bestFitness ? fitness : state.bestFitness
-      const newBestWeights = fitness > state.bestFitness
-        ? nn.getWeights()
-        : state.bestWeights
-
+      const newBestWeights = fitness > state.bestFitness ? nn.getWeights() : state.bestWeights
       const nextIndividual = state.currentIndividual + 1
 
       if (nextIndividual >= state.population.length) {
-        // All individuals tested → evolve to next generation
         const genBest = Math.max(...fitnesses)
         const history = [...state.fitnessHistory, genBest]
         const nextPop = GA.evolve(state.population, fitnesses, state.generation)
         const nextGen = state.generation + 1
-
-        // Check graduation
         const weaponDef = getWeapon(state.selectedWeapon!)
         const graduated = newBest >= (weaponDef?.fitnessThreshold ?? 1)
 
-        // Start first individual of next gen
         nn.setWeights(nextPop[0])
         const newSim = initSim(simConfig)
 
@@ -183,10 +170,9 @@ export const useTrainingStore = create<TrainingStore>((set, get) => ({
           fitnessHistory: history,
           simState: newSim,
           graduated,
-          compute: state.compute - 1, // 1 compute per generation
+          compute: state.compute - 1,
         })
       } else {
-        // Next individual in current generation
         nn.setWeights(state.population[nextIndividual])
         const newSim = initSim(simConfig)
 
@@ -199,7 +185,6 @@ export const useTrainingStore = create<TrainingStore>((set, get) => ({
         })
       }
     } else {
-      // Still running — just update the sim state reference for rendering
       set({ simState: { ...sim } })
     }
   },
@@ -215,12 +200,11 @@ export const useTrainingStore = create<TrainingStore>((set, get) => ({
       generation: state.generation,
     }
 
-    const brains = { ...state.trainedBrains, [state.selectedWeapon]: brain }
-    saveBrains(brains)
+    // Save to soldier's profile in the roster
+    if (state.selectedSoldierId) {
+      useRosterStore.getState().trainSkill(state.selectedSoldierId, state.selectedWeapon, brain)
+    }
 
-    set({
-      trainedBrains: brains,
-      simRunning: false,
-    })
+    set({ simRunning: false })
   },
 }))

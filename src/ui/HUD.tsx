@@ -1,7 +1,8 @@
 import { useGameStore } from '../store'
+import { useRosterStore } from '../rosterStore'
 
 export function HUD() {
-  const gold = useGameStore(s => s.gold)
+  const gold = useRosterStore(s => s.gold)
   const round = useGameStore(s => s.round)
   const phase = useGameStore(s => s.phase)
 
