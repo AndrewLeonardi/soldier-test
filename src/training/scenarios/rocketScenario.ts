@@ -1,31 +1,26 @@
 import { TrainingTarget, TrainingProjectile } from '../../types'
 
 /**
- * Rocket Launcher Training Scenario
+ * Rocket Launcher Training — Hybrid approach
  *
- * Soldier stands at origin, giant soda cans at varying distances.
- * Must learn to aim the rocket (arced trajectory) and blow them up.
+ * BASE BEHAVIOR (free):
+ *   - Soldier auto-faces the nearest alive target
+ *   - Fires when the net says to
  *
- * Neural net inputs (6):
- *   [0] distance to nearest alive target (normalized 0-1)
- *   [1] angle to nearest alive target (normalized -1 to 1)
- *   [2] target x position (normalized)
- *   [3] target z position (normalized)
- *   [4] weapon cooldown (0 = ready, 1 = cooling)
- *   [5] alive targets (normalized 0-1)
+ * NEURAL NET LEARNS:
+ *   - Aim offset (fine-tune left/right from auto-aim)
+ *   - Elevation angle (must learn the arc for different distances)
+ *   - When to fire (timing/confidence)
  *
- * Neural net outputs (4):
- *   [0] turn delta (-1 to 1)
- *   [1] aim elevation (-1 to 1)
- *   [2] fire trigger (> 0 = fire)
- *   [3] move forward/back (-1 to 1)
+ * This means Gen 1 = soldier faces targets but rockets go wild
+ * because elevation is random. Over training, it learns the arc.
  */
 
-const ROCKET_SPEED = 9
-const ROCKET_GRAVITY = -8
-const ROCKET_COOLDOWN = 1.2
-const BLAST_RADIUS = 2.5
-const TARGET_RADIUS = 0.6
+const ROCKET_SPEED = 8
+const ROCKET_GRAVITY = -9
+const ROCKET_COOLDOWN = 1.8
+const BLAST_RADIUS = 1.3
+const TARGET_RADIUS = 0.45
 
 export interface RocketSimState {
   soldierPos: [number, number, number]
@@ -35,86 +30,59 @@ export interface RocketSimState {
   projectiles: TrainingProjectile[]
   score: number
   rocketsFireD: number
+  rocketsHit: number
   time: number
   closestApproach: Record<string, number>
-  totalTurnAmount: number // track spinning for penalty
 }
 
 export function createRocketTargets(): TrainingTarget[] {
   return [
-    {
-      id: 't1',
-      position: [4 + Math.random(), 0, -1 + Math.random() * 0.5],
-      velocity: [0, 0, 0],
-      alive: true,
-      radius: TARGET_RADIUS,
-    },
-    {
-      id: 't2',
-      position: [5.5 + Math.random(), 0, 2 + Math.random() * 0.5],
-      velocity: [0, 0, 0],
-      alive: true,
-      radius: TARGET_RADIUS,
-    },
-    {
-      id: 't3',
-      position: [3.5 + Math.random(), 0, -2.5 + Math.random() * 0.5],
-      velocity: [0, 0, 0],
-      alive: true,
-      radius: TARGET_RADIUS,
-    },
+    { id: 't1', position: [4, 0, 0], velocity: [0, 0, 0], alive: true, radius: TARGET_RADIUS },
+    { id: 't2', position: [6, 0, 2.5], velocity: [0, 0, 0], alive: true, radius: TARGET_RADIUS },
+    { id: 't3', position: [5, 0, -2.5], velocity: [0, 0, 0], alive: true, radius: TARGET_RADIUS },
+    { id: 't4', position: [8, 0, 1], velocity: [0, 0, 0], alive: true, radius: TARGET_RADIUS },
+    { id: 't5', position: [7, 0, -1.5], velocity: [0, 0, 0], alive: true, radius: TARGET_RADIUS },
   ]
 }
 
 export function initRocketSim(): RocketSimState {
   return {
     soldierPos: [0, 0, 0],
-    soldierAngle: 0, // facing +X toward targets
+    soldierAngle: 0,
     weaponCooldown: 0,
     targets: createRocketTargets(),
     projectiles: [],
     score: 0,
     rocketsFireD: 0,
+    rocketsHit: 0,
     time: 0,
-    closestApproach: { t1: 999, t2: 999, t3: 999 },
-    totalTurnAmount: 0,
+    closestApproach: { t1: 999, t2: 999, t3: 999, t4: 999, t5: 999 },
   }
 }
 
 export function getRocketInputs(state: RocketSimState): number[] {
-  const { soldierPos, soldierAngle, weaponCooldown, targets } = state
+  const { soldierPos, targets, weaponCooldown, time } = state
 
+  // Find nearest alive target
+  let nearest = targets[0]
   let nearestDist = 999
-  let nearestAngle = 0
-  let nearestX = 0
-  let nearestZ = 0
-  let aliveCount = 0
-
   for (const t of targets) {
     if (!t.alive) continue
-    aliveCount++
     const dx = t.position[0] - soldierPos[0]
     const dz = t.position[2] - soldierPos[2]
     const dist = Math.sqrt(dx * dx + dz * dz)
-    if (dist < nearestDist) {
-      nearestDist = dist
-      const targetAngle = Math.atan2(dx, dz)
-      let relAngle = targetAngle - soldierAngle
-      while (relAngle > Math.PI) relAngle -= Math.PI * 2
-      while (relAngle < -Math.PI) relAngle += Math.PI * 2
-      nearestAngle = relAngle / Math.PI
-      nearestX = t.position[0] / 8
-      nearestZ = t.position[2] / 8
-    }
+    if (dist < nearestDist) { nearestDist = dist; nearest = t }
   }
 
+  const aliveCount = targets.filter(t => t.alive).length
+
   return [
-    Math.min(1, nearestDist / 10),
-    nearestAngle,
-    nearestX,
-    nearestZ,
-    Math.min(1, weaponCooldown / ROCKET_COOLDOWN),
-    aliveCount / 3,
+    nearest.position[0] / 10,                     // target X
+    nearest.position[2] / 5,                       // target Z
+    Math.min(1, nearestDist / 10),                 // distance
+    Math.min(1, weaponCooldown / ROCKET_COOLDOWN), // cooldown
+    aliveCount / 5,                                // targets left
+    Math.min(1, time / 6),                         // time elapsed
   ]
 }
 
@@ -123,38 +91,51 @@ export function applyRocketOutputs(
   outputs: number[],
   dt: number,
 ): void {
-  // Turn — CLAMPED to prevent wild spinning
-  const turnAmount = outputs[0] * 1.0 * dt // max 1 rad/sec
-  state.soldierAngle += turnAmount
-  state.totalTurnAmount += Math.abs(turnAmount)
+  const { soldierPos, targets } = state
 
-  // Move forward/back (slow, just for positioning)
-  const moveSpeed = outputs[3] * 0.5 * dt
-  state.soldierPos[0] += Math.sin(state.soldierAngle) * moveSpeed
-  state.soldierPos[2] += Math.cos(state.soldierAngle) * moveSpeed
-  // Clamp to arena
-  state.soldierPos[0] = Math.max(-3, Math.min(3, state.soldierPos[0]))
-  state.soldierPos[2] = Math.max(-4, Math.min(4, state.soldierPos[2]))
+  // ── AUTO-AIM: face the nearest alive target (FREE) ──
+  let nearest = targets[0]
+  let nearestDist = 999
+  for (const t of targets) {
+    if (!t.alive) continue
+    const dx = t.position[0] - soldierPos[0]
+    const dz = t.position[2] - soldierPos[2]
+    const dist = Math.sqrt(dx * dx + dz * dz)
+    if (dist < nearestDist) { nearestDist = dist; nearest = t }
+  }
 
-  // Fire
+  const dx = nearest.position[0] - soldierPos[0]
+  const dz = nearest.position[2] - soldierPos[2]
+  const baseAngle = Math.atan2(dx, dz)
+
+  // ── NEURAL NET OUTPUT[0]: aim offset (fine-tune angle) ──
+  // Maps [-1, 1] → [-0.3, 0.3] radians (~17 degrees each way)
+  const aimOffset = outputs[0] * 0.3
+  const finalAngle = baseAngle + aimOffset
+  state.soldierAngle = finalAngle
+
+  // ── NEURAL NET OUTPUT[1]: elevation (MUST LEARN THIS) ──
+  // Maps [-1, 1] → [0.1, 0.7] radians
+  // Low elevation = flat shot (close targets)
+  // High elevation = arced shot (far targets)
+  const elevation = (outputs[1] + 1) * 0.5 * 0.6 + 0.1
+
+  // ── NEURAL NET OUTPUT[2]: fire trigger ──
   if (outputs[2] > 0 && state.weaponCooldown <= 0) {
-    // Elevation controls arc height: map [-1,1] to [0.15, 0.6]
-    const elevation = (outputs[1] + 1) * 0.5 * 0.45 + 0.15
-
     const cosEl = Math.cos(elevation)
     const sinEl = Math.sin(elevation)
     const dir = [
-      Math.sin(state.soldierAngle) * cosEl,
+      Math.sin(finalAngle) * cosEl,
       sinEl,
-      Math.cos(state.soldierAngle) * cosEl,
+      Math.cos(finalAngle) * cosEl,
     ]
 
     state.projectiles.push({
       id: `r${state.rocketsFireD}`,
       position: [
-        state.soldierPos[0] + dir[0] * 0.6,
-        0.9, // shoulder height
-        state.soldierPos[2] + dir[2] * 0.6,
+        soldierPos[0] + dir[0] * 0.6,
+        0.9,
+        soldierPos[2] + dir[2] * 0.6,
       ],
       velocity: [
         dir[0] * ROCKET_SPEED,
@@ -177,59 +158,54 @@ export function tickRocketProjectiles(state: RocketSimState, dt: number): void {
     if (!p.alive) continue
     p.age += dt
 
-    // Gravity
     p.velocity[1] += ROCKET_GRAVITY * dt
-
-    // Move
     p.position[0] += p.velocity[0] * dt
     p.position[1] += p.velocity[1] * dt
     p.position[2] += p.velocity[2] * dt
 
-    // Track closest approach to all targets (even while in flight)
+    // Track closest approach
     for (const t of state.targets) {
       if (!t.alive) continue
-      const dx = p.position[0] - t.position[0]
-      const dz = p.position[2] - t.position[2]
-      const dist = Math.sqrt(dx * dx + dz * dz)
+      const tdx = p.position[0] - t.position[0]
+      const tdz = p.position[2] - t.position[2]
+      const dist = Math.sqrt(tdx * tdx + tdz * tdz)
       if (dist < (state.closestApproach[t.id] ?? 999)) {
         state.closestApproach[t.id] = dist
       }
     }
 
-    // Direct hit on targets (in-air collision)
+    // Direct hit
     for (const t of state.targets) {
       if (!t.alive) continue
-      const dx = p.position[0] - t.position[0]
-      const dy = p.position[1] - t.position[1]
-      const dz = p.position[2] - t.position[2]
-      const dist = Math.sqrt(dx * dx + dy * dy + dz * dz)
+      const tdx = p.position[0] - t.position[0]
+      const tdy = p.position[1] - t.position[1]
+      const tdz = p.position[2] - t.position[2]
+      const dist = Math.sqrt(tdx * tdx + tdy * tdy + tdz * tdz)
       if (dist < t.radius + 0.3) {
         t.alive = false
         p.alive = false
-        state.score += 120 // direct hit bonus
-        state.score += Math.max(0, 40 * (1 - state.time / 4))
+        state.rocketsHit++
+        state.score += 100
       }
     }
 
-    // Hit ground → splash damage
+    // Ground impact → splash
     if (p.position[1] < 0.05 && p.alive) {
       p.alive = false
       for (const t of state.targets) {
         if (!t.alive) continue
-        const dx = p.position[0] - t.position[0]
-        const dz = p.position[2] - t.position[2]
-        const dist = Math.sqrt(dx * dx + dz * dz)
+        const tdx = p.position[0] - t.position[0]
+        const tdz = p.position[2] - t.position[2]
+        const dist = Math.sqrt(tdx * tdx + tdz * tdz)
         if (dist < BLAST_RADIUS) {
           t.alive = false
-          const accuracy = 1 - dist / BLAST_RADIUS
-          state.score += 100 * accuracy
-          state.score += Math.max(0, 30 * (1 - state.time / 4))
+          state.rocketsHit++
+          state.score += 80 * (1 - dist / BLAST_RADIUS)
         }
       }
     }
 
-    // Kill if too old or out of bounds
-    if (p.age > 6 || Math.abs(p.position[0]) > 20 || Math.abs(p.position[2]) > 20 || p.position[1] < -1) {
+    if (p.age > 6 || Math.abs(p.position[0]) > 25 || Math.abs(p.position[2]) > 25 || p.position[1] < -1) {
       p.alive = false
     }
   }
@@ -238,42 +214,34 @@ export function tickRocketProjectiles(state: RocketSimState, dt: number): void {
 }
 
 export function scoreRocketFitness(state: RocketSimState): number {
-  let fitness = state.score
+  const destroyed = state.targets.filter(t => !t.alive).length
 
-  // Penalty for excessive spinning (discourages random rotation)
-  if (state.totalTurnAmount > 3) {
-    fitness -= (state.totalTurnAmount - 3) * 8
-  }
+  // ── HITS: the main event ──
+  let fitness = destroyed * 200
 
-  // Penalty for not firing at all
-  if (state.rocketsFireD === 0) {
-    fitness -= 20
-  }
-
-  // Penalty for excessive rockets (encourages efficiency)
-  fitness -= Math.max(0, state.rocketsFireD - 4) * 8
-
-  // Partial credit for EVERY target based on closest approach
+  // ── CLOSE APPROACHES: smooth gradient for learning ──
   for (const t of state.targets) {
+    if (!t.alive) continue
     const closest = state.closestApproach[t.id] ?? 999
-    if (t.alive && closest < 8) {
-      // Generous partial credit — closer = way more points
-      fitness += Math.max(0, (8 - closest) * 8)
+    if (closest < 4) {
+      fitness += (4 - closest) * 8 // max 32 per target
     }
   }
 
-  // Bonus for facing targets generally (anti-spin reward)
-  for (const t of state.targets) {
-    if (!t.alive) continue
-    const dx = t.position[0] - state.soldierPos[0]
-    const dz = t.position[2] - state.soldierPos[2]
-    const angleToTarget = Math.atan2(dx, dz)
-    let angleDiff = Math.abs(angleToTarget - state.soldierAngle)
-    while (angleDiff > Math.PI) angleDiff = Math.abs(angleDiff - Math.PI * 2)
-    // Up to 15 points for facing the right way
-    fitness += (Math.PI - angleDiff) / Math.PI * 15
+  // ── FIRING REWARD: must fire to score ──
+  fitness += Math.min(state.rocketsFireD, 5) * 5
+
+  // ── ACCURACY BONUS ──
+  if (state.rocketsHit > 0 && state.rocketsFireD > 0) {
+    fitness += (state.rocketsHit / state.rocketsFireD) * 40
   }
 
-  // Normalize: max ~540 (3 targets × 160 + bonuses), threshold 0.45 = ~243
-  return Math.max(0, fitness) / 540
+  // ── SPAM PENALTY: only for excessive fire ──
+  if (state.rocketsFireD > 7) {
+    fitness -= (state.rocketsFireD - 7) * 10
+  }
+
+  // Normalize: 5 × 200 hits + bonuses ≈ 1200 max
+  // Threshold 0.7 = 840 → need 3-4 target kills with decent accuracy
+  return Math.max(0, fitness) / 1200
 }

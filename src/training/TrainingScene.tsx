@@ -201,18 +201,29 @@ export function TrainingScene() {
   const explosionsRef = useRef<Array<{ id: string; position: [number, number, number] }>>([])
   const prevTargets = useRef<Record<string, boolean>>({})
 
-  // Track target deaths for explosions
+  const prevGenRef = useRef(0)
+
+  // Track target deaths for explosions + clear between attempts
   useFrame(() => {
     if (!simState) return
+    const gen = useTrainingStore.getState().generation
+    const ind = useTrainingStore.getState().currentIndividual
+    const key = gen * 1000 + ind
+    // Clear explosions when a new attempt starts
+    if (key !== prevGenRef.current) {
+      explosionsRef.current = []
+      prevTargets.current = {}
+      prevGenRef.current = key
+    }
     for (const t of simState.targets) {
       if (prevTargets.current[t.id] && !t.alive) {
-        explosionsRef.current.push({ id: `exp-${Date.now()}-${t.id}`, position: [...t.position] })
+        explosionsRef.current.push({ id: `exp-${Date.now()}-${t.id}`, position: [...t.position] as [number, number, number] })
       }
       prevTargets.current[t.id] = t.alive
     }
-    // Clean old explosions
-    if (explosionsRef.current.length > 10) {
-      explosionsRef.current = explosionsRef.current.slice(-5)
+    // Cap explosions per attempt
+    if (explosionsRef.current.length > 6) {
+      explosionsRef.current = explosionsRef.current.slice(-3)
     }
   })
 

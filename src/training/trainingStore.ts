@@ -9,7 +9,7 @@ const INPUT_SIZE = 6
 const HIDDEN_SIZE = 8
 const OUTPUT_SIZE = 4
 const WEIGHT_COUNT = NeuralNet.weightCount(INPUT_SIZE, HIDDEN_SIZE, OUTPUT_SIZE)
-const GA = new GeneticAlgorithm(20, 5, 0.15, 0.5, 0.3)
+const GA = new GeneticAlgorithm(30, 6, 0.2, 0.6, 0.35)
 
 interface TrainingStore {
   // Navigation

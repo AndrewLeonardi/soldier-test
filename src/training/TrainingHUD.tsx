@@ -58,7 +58,7 @@ export function TrainingHUD() {
           {compute}
         </div>
         <div className="thud-speed-controls">
-          {[1, 2, 5, 10].map(s => (
+          {[1, 2, 5, 10, 50].map(s => (
             <button
               key={s}
               className={`thud-speed-btn ${simSpeed === s ? 'active' : ''}`}

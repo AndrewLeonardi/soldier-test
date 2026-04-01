@@ -17,8 +17,8 @@ export const WEAPONS: WeaponDefinition[] = [
     description: 'Shoulder-mounted explosive. Devastating but slow.',
     icon: '\u{1F680}',
     computeCost: 1,
-    fitnessThreshold: 0.45,
-    simDuration: 4,
+    fitnessThreshold: 0.7,
+    simDuration: 6,
     locked: false,
   },
   {
