@@ -60,10 +60,10 @@ function loadRoster(): { soldiers: SoldierProfile[]; gold: number } {
     const saved = localStorage.getItem('soldierRoster')
     if (saved) {
       const data = JSON.parse(saved)
-      return { soldiers: data.soldiers ?? STARTER_SOLDIERS, gold: data.gold ?? 500 }
+      return { soldiers: data.soldiers ?? STARTER_SOLDIERS, gold: data.gold ?? 10000 }
     }
   } catch { /* ignore */ }
-  return { soldiers: [...STARTER_SOLDIERS], gold: 500 }
+  return { soldiers: [...STARTER_SOLDIERS], gold: 10000 }
 }
 
 function saveRoster(soldiers: SoldierProfile[], gold: number) {
