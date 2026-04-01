@@ -53,6 +53,10 @@ export function PlacementBar() {
         </div>
       )}
 
+      <button className="training-nav-btn" onClick={() => { window.location.hash = '#/training' }}>
+        {'\u{1F9E0}'} Train
+      </button>
+
       <button className="battle-btn" onClick={startBattle}>
         Fight!
       </button>

@@ -1,0 +1,432 @@
+/* ── Training Page Container ─────────────────────────── */
+.training-container {
+  width: 100%;
+  height: 100%;
+  background: #1a1a2e;
+  overflow: hidden;
+}
+
+/* ── Loadout Screen ──────────────────────────────────── */
+.loadout-screen {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+  color: white;
+}
+
+.loadout-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 20px;
+  background: rgba(0,0,0,0.4);
+  border-bottom: 2px solid rgba(255,255,255,0.1);
+}
+
+.loadout-back-btn {
+  background: none;
+  border: 1px solid rgba(255,255,255,0.3);
+  color: #aaa;
+  padding: 6px 14px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 13px;
+  transition: all 0.15s;
+}
+.loadout-back-btn:hover { color: white; border-color: white; }
+
+.loadout-title {
+  font-size: 22px;
+  font-weight: 900;
+  letter-spacing: 3px;
+  color: #FFD700;
+  text-shadow: 0 2px 8px rgba(255,215,0,0.3);
+}
+
+.loadout-compute {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(0,0,0,0.4);
+  padding: 6px 14px;
+  border-radius: 20px;
+  border: 1px solid rgba(255,215,0,0.3);
+  color: #FFD700;
+  font-weight: 700;
+}
+.compute-icon {
+  width: 18px; height: 18px;
+  background: radial-gradient(circle at 35% 35%, #ffe066, #FFD700);
+  border-radius: 50%;
+  border: 1.5px solid #cc9900;
+}
+
+.loadout-content {
+  flex: 1;
+  display: flex;
+  gap: 0;
+  overflow: hidden;
+}
+
+.loadout-section-title {
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 2px;
+  color: #888;
+  margin-bottom: 12px;
+  text-transform: uppercase;
+}
+
+/* Left panel: weapons */
+.loadout-weapons {
+  width: 240px;
+  padding: 16px;
+  border-right: 1px solid rgba(255,255,255,0.08);
+  overflow-y: auto;
+}
+
+.loadout-weapon-card {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px;
+  border-radius: 10px;
+  border: 2px solid transparent;
+  cursor: pointer;
+  transition: all 0.15s;
+  margin-bottom: 8px;
+  background: rgba(255,255,255,0.04);
+}
+.loadout-weapon-card:hover { background: rgba(255,255,255,0.08); }
+.loadout-weapon-card.selected {
+  border-color: #4CAF50;
+  background: rgba(76,175,80,0.1);
+}
+.loadout-weapon-card.locked {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+.loadout-weapon-card.trained { border-color: rgba(76,175,80,0.3); }
+
+.weapon-icon { font-size: 28px; }
+.weapon-info { flex: 1; }
+.weapon-name {
+  font-size: 14px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.weapon-desc { font-size: 11px; color: #888; margin-top: 2px; }
+.trained-badge { font-size: 14px; }
+.default-badge {
+  font-size: 9px;
+  background: rgba(255,255,255,0.15);
+  padding: 1px 6px;
+  border-radius: 4px;
+  color: #aaa;
+}
+
+/* Center: 3D preview */
+.loadout-preview {
+  flex: 1;
+  min-width: 300px;
+  position: relative;
+}
+
+/* Right panel: stats */
+.loadout-stats {
+  width: 260px;
+  padding: 16px;
+  border-left: 1px solid rgba(255,255,255,0.08);
+}
+
+.loadout-train-info, .loadout-trained-info {
+  margin-top: 8px;
+}
+.loadout-train-info p { color: #aaa; font-size: 13px; margin-bottom: 8px; }
+.loadout-cost { color: #FFD700 !important; font-weight: 700; }
+
+.loadout-train-btn {
+  width: 100%;
+  padding: 14px 20px;
+  margin-top: 16px;
+  background: linear-gradient(180deg, #4CAF50 0%, #2E7D32 100%);
+  border: 2px solid #81C784;
+  border-radius: 12px;
+  color: white;
+  font-size: 15px;
+  font-weight: 800;
+  cursor: pointer;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  box-shadow: 0 4px 16px rgba(46,125,50,0.4);
+  transition: all 0.15s;
+}
+.loadout-train-btn:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(46,125,50,0.5); }
+.loadout-train-btn.retrain {
+  background: linear-gradient(180deg, #FF9800 0%, #E65100 100%);
+  border-color: #FFB74D;
+  box-shadow: 0 4px 16px rgba(230,81,0,0.4);
+}
+
+.trained-stat {
+  display: flex;
+  justify-content: space-between;
+  padding: 8px 0;
+  border-bottom: 1px solid rgba(255,255,255,0.06);
+  font-size: 13px;
+  color: #aaa;
+}
+.stat-value { color: white; font-weight: 700; }
+.stat-value.trained { color: #4CAF50; }
+
+/* ── Training HUD ────────────────────────────────────── */
+.training-hud {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 10;
+}
+
+.thud-top-left {
+  position: absolute;
+  top: 12px;
+  left: 16px;
+}
+.thud-gen {
+  font-size: 28px;
+  font-weight: 900;
+  color: #FFD700;
+  text-shadow: 0 2px 8px rgba(0,0,0,0.6);
+  letter-spacing: 2px;
+}
+.thud-individual {
+  font-size: 13px;
+  color: rgba(255,255,255,0.6);
+  text-shadow: 0 1px 4px rgba(0,0,0,0.6);
+}
+
+.thud-top-center {
+  position: absolute;
+  top: 12px;
+  left: 50%;
+  transform: translateX(-50%);
+  text-align: center;
+}
+.thud-fitness-label {
+  font-size: 11px;
+  color: rgba(255,255,255,0.5);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+.thud-fitness-value {
+  font-size: 32px;
+  font-weight: 900;
+  color: white;
+  text-shadow: 0 2px 8px rgba(0,0,0,0.6);
+}
+.thud-sparkline {
+  display: flex;
+  align-items: flex-end;
+  gap: 2px;
+  justify-content: center;
+  margin-top: 4px;
+  height: 40px;
+}
+.thud-spark-bar {
+  width: 4px;
+  background: #4CAF50;
+  border-radius: 2px;
+  opacity: 0.7;
+}
+
+.thud-top-right {
+  position: absolute;
+  top: 12px;
+  right: 16px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 8px;
+}
+.thud-compute {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: #FFD700;
+  font-weight: 700;
+  font-size: 16px;
+  text-shadow: 0 2px 6px rgba(0,0,0,0.6);
+}
+.thud-compute-icon {
+  width: 16px; height: 16px;
+  background: radial-gradient(circle at 35% 35%, #ffe066, #FFD700);
+  border-radius: 50%;
+}
+.thud-speed-controls {
+  display: flex;
+  gap: 4px;
+  pointer-events: auto;
+}
+.thud-speed-btn {
+  padding: 4px 10px;
+  background: rgba(0,0,0,0.5);
+  border: 1px solid rgba(255,255,255,0.2);
+  border-radius: 6px;
+  color: #aaa;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.1s;
+}
+.thud-speed-btn.active {
+  background: rgba(76,175,80,0.3);
+  border-color: #4CAF50;
+  color: #4CAF50;
+}
+.thud-speed-btn:hover { border-color: white; color: white; }
+
+.thud-bottom {
+  position: absolute;
+  bottom: 16px;
+  left: 16px;
+  right: 16px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.thud-progress-bar {
+  flex: 1;
+  height: 28px;
+  background: rgba(0,0,0,0.5);
+  border-radius: 14px;
+  border: 1px solid rgba(255,255,255,0.1);
+  position: relative;
+  overflow: hidden;
+}
+.thud-progress-fill {
+  position: absolute;
+  inset: 2px;
+  border-radius: 12px;
+  background: linear-gradient(90deg, #2E7D32, #4CAF50, #8BC34A);
+  transition: width 0.3s ease;
+}
+.thud-progress-label {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+  font-weight: 700;
+  color: white;
+  text-shadow: 0 1px 3px rgba(0,0,0,0.8);
+  z-index: 1;
+}
+.thud-controls {
+  display: flex;
+  gap: 8px;
+  pointer-events: auto;
+}
+.thud-btn {
+  padding: 6px 16px;
+  border-radius: 8px;
+  border: 1px solid rgba(255,255,255,0.2);
+  color: white;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.1s;
+}
+.thud-btn.pause { background: rgba(255,255,255,0.1); }
+.thud-btn.back { background: rgba(255,68,68,0.2); border-color: rgba(255,68,68,0.3); }
+.thud-btn:hover { transform: translateY(-1px); }
+
+/* ── Graduation Banner ───────────────────────────────── */
+.graduation-overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(0,0,0,0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 20;
+  animation: fadeIn 0.3s ease;
+}
+.graduation-content {
+  text-align: center;
+  animation: gradPop 0.5s ease-out;
+}
+.graduation-stars {
+  font-size: 48px;
+  margin-bottom: 12px;
+}
+.graduation-title {
+  font-size: 56px;
+  font-weight: 900;
+  color: #FFD700;
+  text-shadow: 0 4px 12px rgba(255,215,0,0.4), 0 2px 4px rgba(0,0,0,0.6);
+  letter-spacing: 4px;
+}
+.graduation-weapon {
+  font-size: 24px;
+  color: #4CAF50;
+  font-weight: 700;
+  margin-top: 8px;
+}
+.graduation-stats {
+  display: flex;
+  gap: 24px;
+  justify-content: center;
+  margin-top: 16px;
+  color: #ccc;
+  font-size: 14px;
+}
+.graduation-btn {
+  margin-top: 24px;
+  padding: 14px 36px;
+  background: linear-gradient(180deg, #4CAF50 0%, #2E7D32 100%);
+  border: 3px solid #81C784;
+  border-radius: 16px;
+  color: white;
+  font-size: 16px;
+  font-weight: 800;
+  cursor: pointer;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  box-shadow: 0 6px 20px rgba(46,125,50,0.5);
+  transition: all 0.15s;
+}
+.graduation-btn:hover { transform: translateY(-2px) scale(1.03); }
+
+/* ── Neural Network Visualization ────────────────────── */
+.nn-viz {
+  position: absolute;
+  bottom: 60px;
+  left: 16px;
+  background: rgba(10, 10, 30, 0.85);
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 12px;
+  padding: 8px 10px 4px;
+  z-index: 10;
+  pointer-events: none;
+  backdrop-filter: blur(4px);
+}
+.nn-title {
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 2px;
+  color: rgba(255,255,255,0.4);
+  text-align: center;
+  margin-bottom: 2px;
+}
+
+@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+@keyframes gradPop {
+  0% { transform: scale(0.3); opacity: 0; }
+  60% { transform: scale(1.1); }
+  100% { transform: scale(1); opacity: 1; }
+}
