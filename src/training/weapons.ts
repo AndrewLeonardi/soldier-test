@@ -37,7 +37,7 @@ export const WEAPONS: WeaponDefinition[] = [
     description: 'Drive a tank. Armored beast with a cannon.',
     icon: '\u{1F6E1}',
     computeCost: 1,
-    fitnessThreshold: 0.7,
+    fitnessThreshold: 0.65,
     simDuration: 8,
     locked: false,
   },
