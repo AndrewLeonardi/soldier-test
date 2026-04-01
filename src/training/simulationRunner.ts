@@ -1,14 +1,14 @@
 import { NeuralNet } from './neuralNet'
 import {
-  RocketSimState,
-  initRocketSim,
-  getRocketInputs,
-  applyRocketOutputs,
-  tickRocketProjectiles,
-  scoreRocketFitness,
+  RocketSimState, initRocketSim, getRocketInputs, applyRocketOutputs,
+  tickRocketProjectiles, scoreRocketFitness,
 } from './scenarios/rocketScenario'
+import {
+  TankSimState, initTankSim, getTankInputs, applyTankOutputs,
+  tickTankProjectiles, scoreTankFitness,
+} from './scenarios/tankScenario'
 
-export type SimState = RocketSimState // union with other scenarios later
+export type SimState = RocketSimState | TankSimState
 
 export interface SimConfig {
   simDuration: number
@@ -16,60 +16,34 @@ export interface SimConfig {
 }
 
 export function initSim(config: SimConfig): SimState {
-  if (config.weaponType === 'rocketLauncher') {
-    return initRocketSim()
-  }
-  return initRocketSim() // fallback
+  if (config.weaponType === 'tank') return initTankSim()
+  return initRocketSim()
 }
 
 export function getInputs(state: SimState, config: SimConfig): number[] {
-  if (config.weaponType === 'rocketLauncher') {
-    return getRocketInputs(state)
-  }
-  return getRocketInputs(state)
+  if (config.weaponType === 'tank') return getTankInputs(state as TankSimState)
+  return getRocketInputs(state as RocketSimState)
 }
 
 export function applyOutputs(state: SimState, outputs: number[], dt: number, config: SimConfig): void {
-  if (config.weaponType === 'rocketLauncher') {
-    applyRocketOutputs(state, outputs, dt)
-  }
+  if (config.weaponType === 'tank') return applyTankOutputs(state as TankSimState, outputs, dt)
+  applyRocketOutputs(state as RocketSimState, outputs, dt)
 }
 
 export function tickProjectiles(state: SimState, dt: number, config: SimConfig): void {
-  if (config.weaponType === 'rocketLauncher') {
-    tickRocketProjectiles(state, dt)
-  }
+  if (config.weaponType === 'tank') return tickTankProjectiles(state as TankSimState, dt)
+  tickRocketProjectiles(state as RocketSimState, dt)
 }
 
 export function scoreFitness(state: SimState, config: SimConfig): number {
-  if (config.weaponType === 'rocketLauncher') {
-    return scoreRocketFitness(state)
-  }
-  return 0
+  if (config.weaponType === 'tank') return scoreTankFitness(state as TankSimState)
+  return scoreRocketFitness(state as RocketSimState)
 }
 
-/**
- * Run one full simulation tick.
- * Called from the training store or from the R3F useFrame loop.
- */
-export function simTick(
-  state: SimState,
-  nn: NeuralNet,
-  config: SimConfig,
-  dt: number,
-): void {
-  // 1. Get neural net inputs from current state
+export function simTick(state: SimState, nn: NeuralNet, config: SimConfig, dt: number): void {
   const inputs = getInputs(state, config)
-
-  // 2. Forward pass
   const outputs = nn.forward(inputs)
-
-  // 3. Apply outputs (move soldier, fire weapon)
   applyOutputs(state, outputs, dt, config)
-
-  // 4. Update projectiles (gravity, collisions, scoring)
   tickProjectiles(state, dt, config)
-
-  // 5. Advance time
   state.time += dt
 }

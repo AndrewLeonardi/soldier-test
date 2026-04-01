@@ -193,6 +193,70 @@ function TrainingSoldier() {
   return <group ref={groupRef} />
 }
 
+// ── Training Tank (drives around arena) ──
+function TrainingTank() {
+  const groupRef = useRef<THREE.Group>(null!)
+
+  useFrame(() => {
+    if (!groupRef.current) return
+    const state = useTrainingStore.getState()
+    const sim = state.simState
+    if (!sim || !('tankPos' in sim)) return
+
+    const ts = sim as any
+    groupRef.current.position.set(ts.tankPos[0], ts.tankPos[1], ts.tankPos[2])
+    groupRef.current.rotation.y = ts.tankAngle
+  })
+
+  return (
+    <group ref={groupRef}>
+      {/* Hull */}
+      <mesh position={[0, 0.22, 0]} castShadow>
+        <boxGeometry args={[0.9, 0.28, 1.4]} />
+        <meshStandardMaterial color={0x4a5a3a} roughness={0.4} />
+      </mesh>
+      {/* Turret base */}
+      <mesh position={[0, 0.44, -0.05]} castShadow>
+        <cylinderGeometry args={[0.3, 0.35, 0.18, 12]} />
+        <meshStandardMaterial color={0x3d6b4f} roughness={0.35} />
+      </mesh>
+      {/* Barrel */}
+      <TurretBarrel />
+      {/* Tracks */}
+      {[-0.48, 0.48].map((x, i) => (
+        <mesh key={`track-${i}`} position={[x, 0.12, 0]} castShadow>
+          <boxGeometry args={[0.14, 0.24, 1.5]} />
+          <meshStandardMaterial color={0x333333} roughness={0.9} />
+        </mesh>
+      ))}
+    </group>
+  )
+}
+
+// Turret barrel that auto-rotates to face target
+function TurretBarrel() {
+  const barrelRef = useRef<THREE.Group>(null!)
+
+  useFrame(() => {
+    if (!barrelRef.current) return
+    const state = useTrainingStore.getState()
+    const sim = state.simState
+    if (!sim || !('turretAngle' in sim)) return
+    const ts = sim as any
+    // Turret rotation is relative to tank body
+    barrelRef.current.rotation.y = ts.turretAngle - ts.tankAngle
+  })
+
+  return (
+    <group ref={barrelRef} position={[0, 0.46, 0]}>
+      <mesh position={[0, 0, 0.55]} rotation-x={Math.PI / 2} castShadow>
+        <cylinderGeometry args={[0.05, 0.04, 0.7, 8]} />
+        <meshStandardMaterial color={0x3a3a3a} roughness={0.3} metalness={0.2} />
+      </mesh>
+    </group>
+  )
+}
+
 // ── Main Training Scene ──
 export function TrainingScene() {
   const simState = useTrainingStore(s => s.simState)
@@ -266,7 +330,8 @@ export function TrainingScene() {
         </mesh>
       ))}
 
-      <TrainingSoldier />
+      {/* Render tank or soldier based on weapon type */}
+      {useTrainingStore.getState().selectedWeapon === 'tank' ? <TrainingTank /> : <TrainingSoldier />}
 
       {/* Soda Can Targets */}
       {simState?.targets.map(t => (

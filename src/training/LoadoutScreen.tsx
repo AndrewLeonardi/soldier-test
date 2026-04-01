@@ -48,7 +48,38 @@ function SoldierPreview({ weapon }: { weapon: WeaponType | null }) {
   return <group ref={groupRef} />
 }
 
+// ── Tank preview (rotating tank on pedestal) ──
+function TankPreview() {
+  const groupRef = useRef<THREE.Group>(null!)
+  useFrame((_, delta) => {
+    if (groupRef.current) groupRef.current.rotation.y += delta * 0.3
+  })
+  return (
+    <group ref={groupRef}>
+      <mesh position={[0, 0.22, 0]} castShadow>
+        <boxGeometry args={[0.9, 0.28, 1.4]} />
+        <meshStandardMaterial color={0x4a5a3a} roughness={0.4} />
+      </mesh>
+      <mesh position={[0, 0.44, -0.05]} castShadow>
+        <cylinderGeometry args={[0.3, 0.35, 0.18, 12]} />
+        <meshStandardMaterial color={0x3d6b4f} roughness={0.35} />
+      </mesh>
+      <mesh position={[0, 0.46, 0.55]} rotation-x={Math.PI / 2} castShadow>
+        <cylinderGeometry args={[0.05, 0.04, 0.7, 8]} />
+        <meshStandardMaterial color={0x3a3a3a} roughness={0.3} metalness={0.2} />
+      </mesh>
+      {[-0.48, 0.48].map((x, i) => (
+        <mesh key={`t-${i}`} position={[x, 0.12, 0]} castShadow>
+          <boxGeometry args={[0.14, 0.24, 1.5]} />
+          <meshStandardMaterial color={0x333333} roughness={0.9} />
+        </mesh>
+      ))}
+    </group>
+  )
+}
+
 function PreviewCanvas({ weapon }: { weapon: WeaponType | null }) {
+  const isTank = weapon === 'tank'
   return (
     <Canvas camera={{ position: [0, 0.6, 3.0], fov: 40 }} style={{ width: '100%', height: '100%' }}>
       <color attach="background" args={['#1a1a2e']} />
@@ -59,7 +90,7 @@ function PreviewCanvas({ weapon }: { weapon: WeaponType | null }) {
         <cylinderGeometry args={[0.6, 0.7, 0.04, 24]} />
         <meshStandardMaterial color={0x333344} roughness={0.5} metalness={0.2} />
       </mesh>
-      <SoldierPreview weapon={weapon} />
+      {isTank ? <TankPreview /> : <SoldierPreview weapon={weapon} />}
     </Canvas>
   )
 }

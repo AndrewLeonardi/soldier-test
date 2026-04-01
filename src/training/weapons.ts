@@ -31,6 +31,16 @@ export const WEAPONS: WeaponDefinition[] = [
     simDuration: 5,
     locked: true,
   },
+  {
+    type: 'tank',
+    label: 'Tank Operator',
+    description: 'Drive a tank. Armored beast with a cannon.',
+    icon: '\u{1F6E1}',
+    computeCost: 1,
+    fitnessThreshold: 0.7,
+    simDuration: 8,
+    locked: false,
+  },
 ]
 
 export function getWeapon(type: string): WeaponDefinition | undefined {

@@ -42,12 +42,14 @@ export const WEAPON_COSTS: Record<WeaponType, number> = {
   rifle: 100,
   rocketLauncher: 200,
   machineGun: 150,
+  tank: 400,
 }
 
 export const WEAPON_ICONS: Record<WeaponType, string> = {
   rifle: '\u{1F52B}',
   rocketLauncher: '\u{1F680}',
   machineGun: '\u{2694}',
+  tank: '\u{1F6E1}',
 }
 
 export interface WaveConfig {
@@ -81,7 +83,7 @@ export const WAVE_CONFIGS: WaveConfig[] = [
 
 // ── Training / Weapon types ──────────────────────────────
 
-export type WeaponType = 'rifle' | 'rocketLauncher' | 'machineGun'
+export type WeaponType = 'rifle' | 'rocketLauncher' | 'machineGun' | 'tank'
 
 export interface TrainedBrain {
   weaponType: WeaponType
