@@ -51,11 +51,16 @@ export function SoldierUnit({ unit }: SoldierUnitProps) {
     const t = elapsedRef.current
     const parts = soldier.parts
 
-    // Position
+    // Position — offset Y up when dead so the toppled body doesn't clip through ground
     const isAirborne = unit.position[1] > 0.1 || Math.abs(unit.velocity[1]) > 0.5
     const lerpSpeed = isAirborne ? 20 : 8
-    const target = new THREE.Vector3(...unit.position)
+    const isDead = unit.state === 'dead' && unit.stateAge > 0.5
+    const yOffset = isDead && unit.position[1] < 0.1 ? 0.15 : 0
+    const target = new THREE.Vector3(unit.position[0], unit.position[1] + yOffset, unit.position[2])
     groupRef.current.position.lerp(target, Math.min(1, delta * lerpSpeed))
+
+    // Clamp to ground — never let the visual go below y=0
+    if (groupRef.current.position.y < 0) groupRef.current.position.y = 0
 
     // Rotation
     const isRagdolling = unit.spinSpeed > 0.1

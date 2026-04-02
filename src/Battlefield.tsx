@@ -331,28 +331,32 @@ export function Battlefield() {
       unit.position[1] += unit.velocity[1] * delta
       unit.position[2] += unit.velocity[2] * delta
 
-      // Ground bounce
+      // Ground collision — hard clamp, never go below 0
       if (unit.position[1] < 0) {
         unit.position[1] = 0
-        unit.velocity[1] *= -0.3 // bouncy!
-        unit.velocity[0] *= 0.7
-        unit.velocity[2] *= 0.7
-        unit.spinSpeed *= 0.6
-        if (Math.abs(unit.velocity[1]) < 0.5) {
+        // Bounce (small)
+        if (Math.abs(unit.velocity[1]) > 0.5) {
+          unit.velocity[1] *= -0.25
+        } else {
           unit.velocity[1] = 0
         }
+        unit.velocity[0] *= 0.7
+        unit.velocity[2] *= 0.7
+        unit.spinSpeed *= 0.5
       }
 
       // Air drag
-      unit.velocity[0] *= 0.995
-      unit.velocity[2] *= 0.995
+      unit.velocity[0] *= 0.993
+      unit.velocity[2] *= 0.993
 
       // Stop if barely moving on ground
-      if (unit.position[1] <= 0.01 && Math.abs(unit.velocity[0]) < 0.05 && Math.abs(unit.velocity[2]) < 0.05) {
+      if (unit.position[1] <= 0.01 && Math.abs(unit.velocity[0]) < 0.1 && Math.abs(unit.velocity[2]) < 0.1 && Math.abs(unit.velocity[1]) < 0.1) {
         unit.velocity[0] = 0
         unit.velocity[1] = 0
         unit.velocity[2] = 0
-        unit.spinSpeed = 0
+        unit.position[1] = 0
+        unit.spinSpeed *= 0.9
+        if (unit.spinSpeed < 0.05) unit.spinSpeed = 0
       }
     }
 
