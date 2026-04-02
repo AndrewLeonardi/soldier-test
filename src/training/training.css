@@ -2,7 +2,7 @@
 .training-container {
   width: 100%;
   height: 100%;
-  background: #1a1a2e;
+  background: #2d4a2d;
   overflow: hidden;
 }
 
@@ -12,7 +12,7 @@
   height: 100%;
   display: flex;
   flex-direction: column;
-  background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+  background: linear-gradient(135deg, #2d4a2d 0%, #3d5a3d 50%, #2a4a30 100%);
   color: white;
 }
 
@@ -21,28 +21,33 @@
   align-items: center;
   justify-content: space-between;
   padding: 12px 20px;
-  background: rgba(0,0,0,0.4);
-  border-bottom: 2px solid rgba(255,255,255,0.1);
+  background: rgba(25,40,20,0.8);
+  border-bottom: 3px solid rgba(90,130,70,0.4);
 }
 
 .loadout-back-btn {
-  background: none;
-  border: 1px solid rgba(255,255,255,0.3);
-  color: #aaa;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(255,255,255,0.06);
+  border: 1px solid rgba(150,200,120,0.3);
+  color: #a0c090;
   padding: 6px 14px;
   border-radius: 8px;
   cursor: pointer;
   font-size: 13px;
   transition: all 0.15s;
 }
-.loadout-back-btn:hover { color: white; border-color: white; }
+.loadout-back-btn:hover { color: white; border-color: #8ab070; background: rgba(255,255,255,0.1); }
+.loadout-back-btn svg { width: 14px; height: 14px; }
 
 .loadout-title {
   font-size: 22px;
   font-weight: 900;
-  letter-spacing: 3px;
+  letter-spacing: 4px;
   color: #FFD700;
   text-shadow: 0 2px 8px rgba(255,215,0,0.3);
+  font-family: 'Arial Black', 'Impact', sans-serif;
 }
 
 .loadout-compute {
@@ -74,16 +79,17 @@
   font-size: 12px;
   font-weight: 700;
   letter-spacing: 2px;
-  color: #888;
+  color: #7a9a6a;
   margin-bottom: 12px;
   text-transform: uppercase;
+  font-family: 'Arial Black', 'Impact', sans-serif;
 }
 
 /* Left panel: weapons */
 .loadout-weapons {
   width: 240px;
   padding: 16px;
-  border-right: 1px solid rgba(255,255,255,0.08);
+  border-right: 1px solid rgba(90,130,70,0.2);
   overflow-y: auto;
 }
 
@@ -97,12 +103,13 @@
   cursor: pointer;
   transition: all 0.15s;
   margin-bottom: 8px;
-  background: rgba(255,255,255,0.04);
+  background: rgba(80,120,70,0.12);
+  color: #b0c8a0;
 }
-.loadout-weapon-card:hover { background: rgba(255,255,255,0.08); }
+.loadout-weapon-card:hover { background: rgba(80,120,70,0.22); }
 .loadout-weapon-card.selected {
-  border-color: #4CAF50;
-  background: rgba(76,175,80,0.1);
+  border-color: #5a9a5a;
+  background: rgba(76,120,60,0.25);
 }
 .loadout-weapon-card.locked {
   opacity: 0.4;
@@ -122,23 +129,30 @@
   align-items: center;
   gap: 8px;
   padding: 8px 10px;
-  background: rgba(255,255,255,0.04);
+  background: rgba(80,120,70,0.12);
   border: 2px solid transparent;
   border-radius: 8px;
   cursor: pointer;
-  color: #aaa;
+  color: #90b080;
   font-size: 13px;
   transition: all 0.1s;
 }
-.soldier-pick-btn:hover { background: rgba(255,255,255,0.08); color: white; }
+.soldier-pick-btn:hover { background: rgba(80,120,70,0.22); color: #c0e0b0; }
 .soldier-pick-btn.selected {
   border-color: #FFD700;
   background: rgba(255,215,0,0.1);
   color: #FFD700;
 }
+.soldier-pick-icon { display: flex; align-items: center; }
+.soldier-pick-icon svg { width: 20px; height: 20px; }
 .soldier-pick-name { font-weight: 700; }
 
-.weapon-icon { font-size: 28px; }
+.weapon-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.weapon-icon svg { width: 28px; height: 28px; }
 .weapon-info { flex: 1; }
 .weapon-name {
   font-size: 14px;
@@ -146,15 +160,17 @@
   display: flex;
   align-items: center;
   gap: 6px;
+  color: #d0e0c0;
 }
-.weapon-desc { font-size: 11px; color: #888; margin-top: 2px; }
-.trained-badge { font-size: 14px; }
+.weapon-desc { font-size: 11px; color: #6a8a5a; margin-top: 2px; }
+.trained-badge { display: flex; align-items: center; }
+.trained-badge svg { width: 14px; height: 14px; }
 .default-badge {
   font-size: 9px;
-  background: rgba(255,255,255,0.15);
+  background: rgba(100,160,100,0.2);
   padding: 1px 6px;
   border-radius: 4px;
-  color: #aaa;
+  color: #7a9a6a;
 }
 
 /* Center: 3D preview */
@@ -168,21 +184,25 @@
 .loadout-stats {
   width: 260px;
   padding: 16px;
-  border-left: 1px solid rgba(255,255,255,0.08);
+  border-left: 1px solid rgba(90,130,70,0.2);
 }
 
 .loadout-train-info, .loadout-trained-info {
   margin-top: 8px;
 }
-.loadout-train-info p { color: #aaa; font-size: 13px; margin-bottom: 8px; }
+.loadout-train-info p { color: #8aaa7a; font-size: 13px; margin-bottom: 8px; }
 .loadout-cost { color: #FFD700 !important; font-weight: 700; }
 
 .loadout-train-btn {
   width: 100%;
   padding: 14px 20px;
   margin-top: 16px;
-  background: linear-gradient(180deg, #4CAF50 0%, #2E7D32 100%);
-  border: 2px solid #81C784;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  background: linear-gradient(180deg, #5a8a4a 0%, #3d6a30 100%);
+  border: 2px solid #7aaa60;
   border-radius: 12px;
   color: white;
   font-size: 15px;
@@ -190,10 +210,19 @@
   cursor: pointer;
   text-transform: uppercase;
   letter-spacing: 1px;
-  box-shadow: 0 4px 16px rgba(46,125,50,0.4);
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,0.15),
+    0 4px 16px rgba(46,125,50,0.4);
   transition: all 0.15s;
+  font-family: 'Arial Black', 'Impact', sans-serif;
 }
-.loadout-train-btn:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(46,125,50,0.5); }
+.loadout-train-btn:hover {
+  transform: translateY(-2px);
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,0.2),
+    0 6px 20px rgba(46,125,50,0.5);
+}
+.loadout-train-btn svg { width: 16px; height: 16px; }
 .loadout-train-btn.retrain {
   background: linear-gradient(180deg, #FF9800 0%, #E65100 100%);
   border-color: #FFB74D;
@@ -204,12 +233,12 @@
   display: flex;
   justify-content: space-between;
   padding: 8px 0;
-  border-bottom: 1px solid rgba(255,255,255,0.06);
+  border-bottom: 1px solid rgba(90,130,70,0.15);
   font-size: 13px;
-  color: #aaa;
+  color: #8aaa7a;
 }
-.stat-value { color: white; font-weight: 700; }
-.stat-value.trained { color: #4CAF50; }
+.stat-value { color: #d0e0c0; font-weight: 700; }
+.stat-value.trained { color: #7adf7a; }
 
 /* ── Training HUD ────────────────────────────────────── */
 .training-hud {
@@ -230,6 +259,7 @@
   color: #FFD700;
   text-shadow: 0 2px 8px rgba(0,0,0,0.6);
   letter-spacing: 2px;
+  font-family: 'Arial Black', 'Impact', sans-serif;
 }
 .thud-individual {
   font-size: 13px;
@@ -249,6 +279,7 @@
   color: rgba(255,255,255,0.5);
   text-transform: uppercase;
   letter-spacing: 1px;
+  font-family: 'Arial Black', 'Impact', sans-serif;
 }
 .thud-fitness-value {
   font-size: 32px;
@@ -266,7 +297,7 @@
 }
 .thud-spark-bar {
   width: 4px;
-  background: #4CAF50;
+  background: #5a9a4a;
   border-radius: 2px;
   opacity: 0.7;
 }
@@ -302,20 +333,20 @@
 .thud-speed-btn {
   padding: 4px 10px;
   background: rgba(0,0,0,0.5);
-  border: 1px solid rgba(255,255,255,0.2);
+  border: 1px solid rgba(100,160,100,0.3);
   border-radius: 6px;
-  color: #aaa;
+  color: #90b080;
   font-size: 12px;
   font-weight: 700;
   cursor: pointer;
   transition: all 0.1s;
 }
 .thud-speed-btn.active {
-  background: rgba(76,175,80,0.3);
-  border-color: #4CAF50;
-  color: #4CAF50;
+  background: rgba(76,150,60,0.3);
+  border-color: #5a9a4a;
+  color: #7adf7a;
 }
-.thud-speed-btn:hover { border-color: white; color: white; }
+.thud-speed-btn:hover { border-color: #8ab070; color: #c0e0b0; }
 
 .thud-bottom {
   position: absolute;
@@ -331,7 +362,7 @@
   height: 28px;
   background: rgba(0,0,0,0.5);
   border-radius: 14px;
-  border: 1px solid rgba(255,255,255,0.1);
+  border: 1px solid rgba(100,160,100,0.2);
   position: relative;
   overflow: hidden;
 }
@@ -339,7 +370,7 @@
   position: absolute;
   inset: 2px;
   border-radius: 12px;
-  background: linear-gradient(90deg, #2E7D32, #4CAF50, #8BC34A);
+  background: linear-gradient(90deg, #2d6a22, #4a9a3a, #7ac04a);
   transition: width 0.3s ease;
 }
 .thud-progress-label {
@@ -362,22 +393,22 @@
 .thud-btn {
   padding: 6px 16px;
   border-radius: 8px;
-  border: 1px solid rgba(255,255,255,0.2);
-  color: white;
+  border: 1px solid rgba(100,160,100,0.3);
+  color: #c0e0b0;
   font-size: 12px;
   font-weight: 700;
   cursor: pointer;
   transition: all 0.1s;
 }
-.thud-btn.pause { background: rgba(255,255,255,0.1); }
-.thud-btn.back { background: rgba(255,68,68,0.2); border-color: rgba(255,68,68,0.3); }
+.thud-btn.pause { background: rgba(80,120,70,0.2); }
+.thud-btn.back { background: rgba(255,68,68,0.2); border-color: rgba(255,68,68,0.3); color: #ff8888; }
 .thud-btn:hover { transform: translateY(-1px); }
 
 /* ── Graduation Banner ───────────────────────────────── */
 .graduation-overlay {
   position: absolute;
   inset: 0;
-  background: rgba(0,0,0,0.6);
+  background: rgba(20,35,20,0.7);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -389,8 +420,13 @@
   animation: gradPop 0.5s ease-out;
 }
 .graduation-stars {
-  font-size: 48px;
+  display: flex;
+  justify-content: center;
+  gap: 8px;
   margin-bottom: 12px;
+}
+.graduation-stars svg {
+  filter: drop-shadow(0 2px 6px rgba(255,215,0,0.5));
 }
 .graduation-title {
   font-size: 56px;
@@ -398,10 +434,11 @@
   color: #FFD700;
   text-shadow: 0 4px 12px rgba(255,215,0,0.4), 0 2px 4px rgba(0,0,0,0.6);
   letter-spacing: 4px;
+  font-family: 'Arial Black', 'Impact', sans-serif;
 }
 .graduation-weapon {
   font-size: 24px;
-  color: #4CAF50;
+  color: #7adf7a;
   font-weight: 700;
   margin-top: 8px;
 }
@@ -410,14 +447,14 @@
   gap: 24px;
   justify-content: center;
   margin-top: 16px;
-  color: #ccc;
+  color: #b0c8a0;
   font-size: 14px;
 }
 .graduation-btn {
   margin-top: 24px;
   padding: 14px 36px;
-  background: linear-gradient(180deg, #4CAF50 0%, #2E7D32 100%);
-  border: 3px solid #81C784;
+  background: linear-gradient(180deg, #5a8a4a 0%, #3d6a30 100%);
+  border: 3px solid #7aaa60;
   border-radius: 16px;
   color: white;
   font-size: 16px;
@@ -425,8 +462,11 @@
   cursor: pointer;
   text-transform: uppercase;
   letter-spacing: 2px;
-  box-shadow: 0 6px 20px rgba(46,125,50,0.5);
+  box-shadow:
+    inset 0 2px 0 rgba(255,255,255,0.15),
+    0 6px 20px rgba(46,125,50,0.5);
   transition: all 0.15s;
+  font-family: 'Arial Black', 'Impact', sans-serif;
 }
 .graduation-btn:hover { transform: translateY(-2px) scale(1.03); }
 
@@ -435,8 +475,8 @@
   position: absolute;
   bottom: 60px;
   left: 16px;
-  background: rgba(10, 10, 30, 0.85);
-  border: 1px solid rgba(255,255,255,0.1);
+  background: rgba(20, 35, 20, 0.85);
+  border: 1px solid rgba(100,160,100,0.15);
   border-radius: 12px;
   padding: 8px 10px 4px;
   z-index: 10;
@@ -447,9 +487,10 @@
   font-size: 9px;
   font-weight: 700;
   letter-spacing: 2px;
-  color: rgba(255,255,255,0.4);
+  color: rgba(160,200,140,0.4);
   text-align: center;
   margin-bottom: 2px;
+  font-family: 'Arial Black', 'Impact', sans-serif;
 }
 
 @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }

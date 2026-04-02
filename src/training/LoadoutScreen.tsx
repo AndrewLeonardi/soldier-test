@@ -9,6 +9,7 @@ import { useTrainingStore } from './trainingStore'
 import { useRosterStore } from '../rosterStore'
 import { WEAPONS } from './weapons'
 import { WeaponType } from '../types'
+import { SoldierIcon, WEAPON_ICON_COMPONENTS, TrainIcon, BackArrowIcon, CheckIcon, RetryIcon } from '../ui/ToyIcons'
 
 // ── 3D Soldier Preview ──
 function SoldierPreview({ weapon }: { weapon: WeaponType | null }) {
@@ -82,13 +83,13 @@ function PreviewCanvas({ weapon }: { weapon: WeaponType | null }) {
   const isTank = weapon === 'tank'
   return (
     <Canvas camera={{ position: [0, 0.6, 3.0], fov: 40 }} style={{ width: '100%', height: '100%' }}>
-      <color attach="background" args={['#1a1a2e']} />
+      <color attach="background" args={['#2d4a2d']} />
       <directionalLight position={[3, 5, 4]} intensity={2} />
       <directionalLight position={[-2, 3, -3]} intensity={0.6} color="#aaccff" />
       <ambientLight intensity={0.4} />
       <mesh position={[0, -0.02, 0]} receiveShadow>
         <cylinderGeometry args={[0.6, 0.7, 0.04, 24]} />
-        <meshStandardMaterial color={0x333344} roughness={0.5} metalness={0.2} />
+        <meshStandardMaterial color={0x3a4a30} roughness={0.5} metalness={0.2} />
       </mesh>
       {isTank ? <TankPreview /> : <SoldierPreview weapon={weapon} />}
     </Canvas>
@@ -122,7 +123,7 @@ export function LoadoutScreen() {
     <div className="loadout-screen">
       <div className="loadout-header">
         <button className="loadout-back-btn" onClick={() => { window.location.hash = '#/roster' }}>
-          {'\u2190'} Back to Roster
+          <BackArrowIcon size={14} /> Back to Roster
         </button>
         <h1 className="loadout-title">TRAINING GROUNDS</h1>
         <div className="loadout-compute">
@@ -143,7 +144,7 @@ export function LoadoutScreen() {
                 className={`soldier-pick-btn ${selectedSoldierId === s.id ? 'selected' : ''}`}
                 onClick={() => selectSoldier(s.id)}
               >
-                <span>{'\u{1F482}'}</span>
+                <span className="soldier-pick-icon"><SoldierIcon size={20} /></span>
                 <span className="soldier-pick-name">{s.name}</span>
               </div>
             ))}
@@ -157,6 +158,7 @@ export function LoadoutScreen() {
                 const isSelected = selectedWeapon === w.type
                 const isDefault = w.type === 'rifle'
                 const isLocked = w.locked && !isTrained
+                const WeaponIconComp = WEAPON_ICON_COMPONENTS[w.type]
 
                 return (
                   <div
@@ -164,11 +166,11 @@ export function LoadoutScreen() {
                     className={`loadout-weapon-card ${isSelected ? 'selected' : ''} ${isLocked ? 'locked' : ''} ${isTrained ? 'trained' : ''}`}
                     onClick={() => !isLocked && selectWeapon(w.type)}
                   >
-                    <span className="weapon-icon">{w.icon}</span>
+                    <span className="weapon-icon"><WeaponIconComp size={28} /></span>
                     <div className="weapon-info">
                       <div className="weapon-name">
                         {isLocked ? '???' : w.label}
-                        {isTrained && <span className="trained-badge">{'\u2705'}</span>}
+                        {isTrained && <span className="trained-badge"><CheckIcon size={14} color="#4CAF50" /></span>}
                         {isDefault && <span className="default-badge">DEFAULT</span>}
                       </div>
                       <div className="weapon-desc">
@@ -189,7 +191,7 @@ export function LoadoutScreen() {
             <div style={{
               position: 'absolute', bottom: '10px', left: '50%', transform: 'translateX(-50%)',
               color: '#FFD700', fontSize: '16px', fontWeight: 800, textShadow: '0 2px 6px rgba(0,0,0,0.8)',
-              letterSpacing: '1px',
+              letterSpacing: '1px', fontFamily: "'Arial Black', 'Impact', sans-serif",
             }}>
               {selectedSoldier.name}
             </div>
@@ -199,10 +201,10 @@ export function LoadoutScreen() {
         {/* Right: Info + Actions */}
         <div className="loadout-stats">
           {!selectedSoldierId && (
-            <p style={{ color: '#666', padding: '20px' }}>Select a soldier from your roster to begin training.</p>
+            <p style={{ color: '#6a8a5a', padding: '20px' }}>Select a soldier from your roster to begin training.</p>
           )}
           {selectedSoldierId && !selectedWeapon && (
-            <p style={{ color: '#666', padding: '20px' }}>Now select a weapon skill to train.</p>
+            <p style={{ color: '#6a8a5a', padding: '20px' }}>Now select a weapon skill to train.</p>
           )}
           {selectedSoldierId && selectedWeapon && selectedWeapon !== 'rifle' && !hasBrain && (
             <div className="loadout-train-info">
@@ -211,7 +213,7 @@ export function LoadoutScreen() {
               <p>The neural network will learn through trial and error.</p>
               <p className="loadout-cost">Cost: 1 compute / generation</p>
               <button className="loadout-train-btn" onClick={startTraining}>
-                {'\u{1F9E0}'} BEGIN TRAINING
+                <TrainIcon size={16} /> BEGIN TRAINING
               </button>
             </div>
           )}
@@ -231,7 +233,7 @@ export function LoadoutScreen() {
                 <span className="stat-value">{(hasBrain as any).generation}</span>
               </div>
               <button className="loadout-train-btn" onClick={startTraining}>
-                {'\u{1F504}'} Train More
+                <RetryIcon size={16} /> Train More
               </button>
             </div>
           )}
@@ -241,7 +243,7 @@ export function LoadoutScreen() {
               <div className="trained-stat">
                 <span>Status:</span> <span className="stat-value trained">DEFAULT WEAPON</span>
               </div>
-              <p style={{ color: '#888', fontSize: '13px', marginTop: '12px' }}>
+              <p style={{ color: '#7a9a6a', fontSize: '13px', marginTop: '12px' }}>
                 All soldiers come with basic rifle training.
               </p>
             </div>

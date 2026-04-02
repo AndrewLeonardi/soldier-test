@@ -1,4 +1,5 @@
 import { useTrainingStore } from './trainingStore'
+import { StarIcon } from '../ui/ToyIcons'
 
 export function GraduationBanner() {
   const graduated = useTrainingStore(s => s.graduated)
@@ -18,7 +19,9 @@ export function GraduationBanner() {
     <div className="graduation-overlay">
       <div className="graduation-content">
         <div className="graduation-stars">
-          {'\u2B50'} {'\u2B50'} {'\u2B50'}
+          <StarIcon size={48} color="#FFD700" />
+          <StarIcon size={48} color="#FFD700" />
+          <StarIcon size={48} color="#FFD700" />
         </div>
         <div className="graduation-title">SKILL LEARNED!</div>
         <div className="graduation-weapon">{weaponName}</div>

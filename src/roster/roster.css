@@ -1,9 +1,12 @@
+/* ── Roster Page: Toy Soldier Playset Theme ────────── */
+
 .roster-page {
   width: 100%;
   height: 100%;
   display: flex;
   flex-direction: column;
-  background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+  background:
+    linear-gradient(135deg, #3d5a3d 0%, #2d4a2d 50%, #4a6a3a 100%);
   color: white;
   overflow: hidden;
 }
@@ -13,27 +16,33 @@
   align-items: center;
   justify-content: space-between;
   padding: 12px 20px;
-  background: rgba(0,0,0,0.4);
-  border-bottom: 2px solid rgba(255,255,255,0.1);
+  background: rgba(25,40,20,0.8);
+  border-bottom: 3px solid rgba(90,130,70,0.4);
 }
 
 .roster-nav-btn {
-  background: none;
-  border: 1px solid rgba(255,255,255,0.3);
-  color: #aaa;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(255,255,255,0.06);
+  border: 1px solid rgba(150,200,120,0.3);
+  color: #a0c090;
   padding: 6px 14px;
   border-radius: 8px;
   cursor: pointer;
   font-size: 13px;
+  transition: all 0.15s;
 }
-.roster-nav-btn:hover { color: white; border-color: white; }
+.roster-nav-btn:hover { color: white; border-color: #8ab070; background: rgba(255,255,255,0.1); }
+.roster-nav-btn svg { width: 14px; height: 14px; }
 
 .roster-title {
   font-size: 22px;
   font-weight: 900;
-  letter-spacing: 3px;
+  letter-spacing: 4px;
   color: #FFD700;
   text-shadow: 0 2px 8px rgba(255,215,0,0.3);
+  font-family: 'Arial Black', 'Impact', sans-serif;
 }
 
 .roster-gold {
@@ -79,9 +88,9 @@
 
 .roster-card {
   width: 180px;
-  background: rgba(255,255,255,0.06);
-  border: 2px solid rgba(255,255,255,0.1);
-  border-radius: 14px;
+  background: linear-gradient(180deg, rgba(80,110,70,0.35) 0%, rgba(50,80,50,0.25) 100%);
+  border: 2px solid rgba(100,150,80,0.35);
+  border-radius: 12px;
   padding: 14px;
   display: flex;
   flex-direction: column;
@@ -89,9 +98,19 @@
   gap: 8px;
   position: relative;
   transition: all 0.15s;
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,0.08),
+    0 4px 16px rgba(0,0,0,0.3);
 }
-.roster-card:hover { background: rgba(255,255,255,0.1); border-color: rgba(255,255,255,0.2); }
-.roster-card.injured { opacity: 0.6; }
+.roster-card:hover {
+  background: linear-gradient(180deg, rgba(90,130,80,0.4) 0%, rgba(60,100,60,0.3) 100%);
+  border-color: rgba(130,180,100,0.5);
+  transform: translateY(-2px);
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,0.12),
+    0 8px 24px rgba(0,0,0,0.4);
+}
+.roster-card.injured { opacity: 0.55; }
 
 /* Status badge */
 .roster-status {
@@ -103,32 +122,50 @@
   letter-spacing: 1px;
   padding: 2px 8px;
   border-radius: 6px;
+  font-family: 'Arial Black', 'Impact', sans-serif;
 }
-.status-ready { background: rgba(76,175,80,0.3); color: #4CAF50; }
-.status-injured { background: rgba(255,68,68,0.3); color: #FF4444; }
+.status-ready { background: rgba(76,175,80,0.3); color: #7adf7a; border: 1px solid rgba(76,175,80,0.3); }
+.status-injured { background: rgba(255,68,68,0.3); color: #FF6666; border: 1px solid rgba(255,68,68,0.3); }
 
 /* Avatar */
 .roster-avatar {
   position: relative;
-  font-size: 40px;
-  line-height: 1;
   margin: 4px 0;
 }
+
+.roster-avatar-icon {
+  width: 56px;
+  height: 56px;
+  background: rgba(61,107,79,0.3);
+  border: 2px solid rgba(100,160,100,0.3);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #90c080;
+}
+
 .roster-weapon-badge {
   position: absolute;
   bottom: -4px;
   right: -12px;
-  font-size: 18px;
-  background: rgba(0,0,0,0.6);
+  background: rgba(20,35,20,0.8);
+  border: 1px solid rgba(100,160,100,0.4);
   border-radius: 8px;
-  padding: 2px 4px;
+  padding: 3px 5px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #b0d0a0;
 }
+.roster-weapon-badge svg { width: 18px; height: 18px; }
 
 /* Name */
 .roster-name {
   font-size: 15px;
   font-weight: 800;
   letter-spacing: 0.5px;
+  color: #e0ecd0;
 }
 
 /* Skills */
@@ -143,29 +180,32 @@
   align-items: center;
   gap: 3px;
   padding: 4px 8px;
-  background: rgba(255,255,255,0.06);
-  border: 1px solid rgba(255,255,255,0.15);
+  background: rgba(80,120,70,0.15);
+  border: 1px solid rgba(100,160,100,0.25);
   border-radius: 6px;
-  color: #aaa;
+  color: #90b080;
   font-size: 11px;
   cursor: pointer;
   transition: all 0.1s;
 }
-.roster-skill-btn:hover { border-color: #4CAF50; color: white; }
+.roster-skill-btn:hover { border-color: #7aaa6a; color: #c0e0b0; background: rgba(80,120,70,0.25); }
 .roster-skill-btn.equipped {
-  background: rgba(76,175,80,0.15);
-  border-color: #4CAF50;
-  color: #4CAF50;
+  background: rgba(61,107,79,0.25);
+  border-color: #5a9a5a;
+  color: #8ad07a;
 }
+.skill-icon-wrap { display: flex; align-items: center; }
+.skill-icon-wrap svg { width: 14px; height: 14px; }
 .skill-label { font-size: 9px; font-weight: 700; text-transform: uppercase; }
-.equipped-check { font-size: 10px; }
+.equipped-check { display: flex; align-items: center; }
+.equipped-check svg { width: 10px; height: 10px; }
 
 /* Stats */
 .roster-stats-row {
   display: flex;
   gap: 12px;
   font-size: 10px;
-  color: #666;
+  color: #6a8a5a;
 }
 
 /* Actions */
@@ -176,38 +216,51 @@
 .roster-train-btn {
   width: 100%;
   padding: 8px;
-  background: linear-gradient(180deg, #7C4DFF 0%, #512DA8 100%);
-  border: 2px solid #B388FF;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  background: linear-gradient(180deg, #5a7a4a 0%, #3d5a30 100%);
+  border: 2px solid #7a9a60;
   border-radius: 8px;
-  color: white;
+  color: #d0e0c0;
   font-size: 11px;
   font-weight: 800;
   cursor: pointer;
   text-transform: uppercase;
   letter-spacing: 1px;
   transition: all 0.15s;
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,0.1),
+    0 2px 8px rgba(0,0,0,0.2);
 }
-.roster-train-btn:hover { transform: translateY(-1px); }
-.roster-train-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+.roster-train-btn:hover {
+  transform: translateY(-1px);
+  background: linear-gradient(180deg, #6a8a5a 0%, #4d6a40 100%);
+}
+.roster-train-btn:disabled { opacity: 0.35; cursor: not-allowed; transform: none; }
+.roster-train-btn svg { width: 14px; height: 14px; }
 
 /* Recruit card */
 .roster-recruit {
   cursor: pointer;
   border-style: dashed;
-  border-color: rgba(255,255,255,0.2);
+  border-color: rgba(100,160,100,0.3);
   justify-content: center;
 }
-.roster-recruit:hover { border-color: #FFD700; }
+.roster-recruit:hover { border-color: #FFD700; background: rgba(100,160,100,0.15); }
 .roster-recruit.disabled { opacity: 0.3; cursor: not-allowed; }
 .recruit-icon {
   font-size: 36px;
-  color: #666;
+  color: #5a8a5a;
   font-weight: 300;
 }
 .recruit-label {
   font-size: 13px;
   font-weight: 700;
-  color: #888;
+  color: #80a070;
+  text-transform: uppercase;
+  letter-spacing: 1px;
 }
 .recruit-cost {
   font-size: 13px;
@@ -221,24 +274,39 @@
   display: flex;
   gap: 12px;
   padding: 12px 20px;
-  background: rgba(0,0,0,0.4);
-  border-top: 1px solid rgba(255,255,255,0.1);
+  background: rgba(25,40,20,0.8);
+  border-top: 2px solid rgba(90,130,70,0.3);
   justify-content: center;
 }
 .roster-footer-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
   padding: 10px 24px;
   border-radius: 10px;
-  border: 2px solid rgba(255,255,255,0.2);
-  background: rgba(255,255,255,0.05);
-  color: #ccc;
+  border: 2px solid rgba(100,160,100,0.3);
+  background: rgba(80,120,70,0.15);
+  color: #a0c090;
   font-size: 13px;
   font-weight: 700;
   cursor: pointer;
   transition: all 0.15s;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.05);
 }
-.roster-footer-btn:hover { border-color: white; color: white; }
+.roster-footer-btn:hover { border-color: #8ab070; color: #d0e0c0; background: rgba(80,120,70,0.25); }
+.roster-footer-btn svg { width: 14px; height: 14px; }
 .roster-footer-btn.primary {
   background: linear-gradient(180deg, #ff5555 0%, #cc2222 100%);
   border-color: #ff8888;
   color: white;
+  box-shadow:
+    inset 0 2px 0 rgba(255,255,255,0.2),
+    inset 0 -1px 0 rgba(0,0,0,0.15),
+    0 4px 12px rgba(204,34,34,0.3);
+}
+.roster-footer-btn.primary:hover {
+  transform: translateY(-1px);
+  box-shadow:
+    inset 0 2px 0 rgba(255,255,255,0.25),
+    0 6px 16px rgba(204,34,34,0.4);
 }

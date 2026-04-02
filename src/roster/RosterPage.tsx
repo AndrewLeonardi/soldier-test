@@ -1,6 +1,7 @@
 import './roster.css'
 import { useRosterStore } from '../rosterStore'
 import { SoldierCard } from './SoldierCard'
+import { BackArrowIcon, TrainIcon, BattleIcon } from '../ui/ToyIcons'
 
 export function RosterPage() {
   const soldiers = useRosterStore(s => s.soldiers)
@@ -14,7 +15,7 @@ export function RosterPage() {
       {/* Header */}
       <div className="roster-header">
         <button className="roster-nav-btn" onClick={() => { window.location.hash = '#/' }}>
-          {'\u2190'} Battle
+          <BackArrowIcon size={14} /> Battle
         </button>
         <h1 className="roster-title">YOUR SQUAD</h1>
         <div className="roster-gold">
@@ -45,10 +46,10 @@ export function RosterPage() {
       {/* Bottom nav */}
       <div className="roster-footer">
         <button className="roster-footer-btn" onClick={() => { window.location.hash = '#/training' }}>
-          {'\u{1F9E0}'} Training Grounds
+          <TrainIcon size={14} /> Training Grounds
         </button>
         <button className="roster-footer-btn primary" onClick={() => { window.location.hash = '#/' }}>
-          {'\u2694'} Go to Battle
+          <BattleIcon size={14} /> Go to Battle
         </button>
       </div>
     </div>

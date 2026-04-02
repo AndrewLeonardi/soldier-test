@@ -1,3 +1,16 @@
+/* ── Toy Soldier Palette ─────────────────────────────── */
+
+:root {
+  --toy-army-green: #3d6b4f;
+  --toy-dark-green: #2d5a3f;
+  --toy-olive: #4a5a3a;
+  --toy-tan: #C2A645;
+  --toy-khaki: #8b7d5c;
+  --toy-sand: #c2b280;
+  --toy-plastic-light: #5a8a5a;
+  --toy-plastic-dark: #2a4a2a;
+}
+
 /* ── Mobile Game UI Styles ────────────────────────────── */
 
 .game-container {
@@ -32,7 +45,7 @@
   align-items: center;
   justify-content: space-between;
   padding: 0 16px;
-  background: linear-gradient(180deg, rgba(0,0,0,0.7) 0%, rgba(0,0,0,0.3) 100%);
+  background: linear-gradient(180deg, rgba(30,45,25,0.85) 0%, rgba(30,45,25,0.3) 100%);
   z-index: 10;
   pointer-events: none;
 }
@@ -71,20 +84,21 @@
   font-weight: 700;
   text-shadow: 0 2px 6px rgba(0,0,0,0.8);
   text-transform: uppercase;
-  letter-spacing: 1px;
+  letter-spacing: 2px;
+  font-family: 'Arial Black', 'Impact', sans-serif;
 }
 
 .hud-phase {
-  color: #aaeeff;
+  color: var(--toy-sand);
   font-size: 14px;
   font-weight: 600;
   text-shadow: 0 2px 4px rgba(0,0,0,0.8);
   text-transform: uppercase;
   letter-spacing: 2px;
   padding: 4px 14px;
-  border: 1px solid rgba(170, 238, 255, 0.3);
+  border: 1px solid rgba(194,178,128,0.3);
   border-radius: 12px;
-  background: rgba(170, 238, 255, 0.1);
+  background: rgba(194,178,128,0.1);
 }
 
 /* ── Placement Bar ───────────────────────────────────── */
@@ -99,7 +113,8 @@
   justify-content: center;
   gap: 10px;
   padding: 12px 16px 16px;
-  background: linear-gradient(0deg, rgba(0,0,0,0.75) 0%, rgba(0,0,0,0.2) 80%, transparent 100%);
+  background: linear-gradient(0deg, rgba(35,55,30,0.95) 0%, rgba(35,55,30,0.8) 70%, transparent 100%);
+  border-top: 2px solid rgba(61,107,79,0.4);
   z-index: 10;
 }
 
@@ -109,60 +124,85 @@
   align-items: center;
   gap: 4px;
   padding: 10px 14px 8px;
-  background: linear-gradient(180deg, #ffffff 0%, #e8e8e8 100%);
-  border: 3px solid #ccc;
-  border-radius: 14px;
+  background: linear-gradient(180deg, #5a7a52 0%, #3d6b4f 100%);
+  border: 3px solid #2d5a3f;
+  border-radius: 10px;
   cursor: pointer;
   transition: all 0.15s ease;
   min-width: 80px;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+  color: #d0dcc0;
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,0.15),
+    inset 0 -1px 0 rgba(0,0,0,0.15),
+    0 4px 12px rgba(0,0,0,0.4);
   user-select: none;
 }
 
 .placement-card:hover {
   transform: translateY(-4px);
-  box-shadow: 0 8px 20px rgba(0,0,0,0.4);
+  background: linear-gradient(180deg, #6a8a62 0%, #4d7b5f 100%);
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,0.2),
+    inset 0 -1px 0 rgba(0,0,0,0.15),
+    0 8px 20px rgba(0,0,0,0.5);
 }
 
 .placement-card.selected {
-  border-color: #4CAF50;
-  background: linear-gradient(180deg, #e8f5e9 0%, #c8e6c9 100%);
-  box-shadow: 0 4px 16px rgba(76, 175, 80, 0.4);
+  border-color: #a0d0a0;
+  background: linear-gradient(180deg, #7aa87a 0%, #5a9a5a 100%);
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,0.25),
+    0 0 12px rgba(100, 200, 100, 0.4),
+    0 4px 16px rgba(0,0,0,0.4);
   transform: translateY(-6px);
 }
 
 .placement-card.disabled {
-  opacity: 0.5;
+  opacity: 0.4;
   cursor: not-allowed;
-  filter: grayscale(0.6);
+  filter: grayscale(0.5);
 }
 
 .placement-card.disabled:hover {
   transform: none;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+  background: linear-gradient(180deg, #5a7a52 0%, #3d6b4f 100%);
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,0.15),
+    inset 0 -1px 0 rgba(0,0,0,0.15),
+    0 4px 12px rgba(0,0,0,0.4);
 }
 
 .placement-card.rotate-card {
-  background: linear-gradient(180deg, #f0f0ff 0%, #d8d8f0 100%);
-  border-color: #aab;
+  background: linear-gradient(180deg, #5a6a5a 0%, #3d4d3d 100%);
+  border-color: #4a5a4a;
   min-width: 65px;
 }
 
 .placement-card.rotate-card:hover {
-  border-color: #88a;
+  border-color: #6a8a6a;
+  background: linear-gradient(180deg, #6a7a6a 0%, #4d5d4d 100%);
 }
 
 .placement-card-icon {
   font-size: 28px;
   line-height: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.placement-card-icon svg {
+  width: 28px;
+  height: 28px;
 }
 
 .placement-card-name {
   font-size: 11px;
   font-weight: 700;
-  color: #333;
+  color: #d0dcc0;
   text-transform: uppercase;
   letter-spacing: 0.5px;
+  font-family: 'Arial Black', 'Impact', sans-serif;
 }
 
 .placement-card-cost {
@@ -182,54 +222,79 @@
   border: 1.5px solid #cc9900;
 }
 
-/* ── Battle Button ───────────────────────────────────── */
+/* ── Soldier Cards ──────────────────────────────────── */
 
 .placement-card.soldier-card {
-  border-color: #4CAF50;
-  background: linear-gradient(180deg, #f0fff0 0%, #e0f0e0 100%);
+  border-color: var(--toy-tan);
+  background: linear-gradient(180deg, #5a7a4a 0%, #4a6a3a 100%);
+}
+
+.placement-card.soldier-card:hover {
+  background: linear-gradient(180deg, #6a8a5a 0%, #5a7a4a 100%);
+}
+
+.placement-card.soldier-card.selected {
+  border-color: #c0e0a0;
+  background: linear-gradient(180deg, #7aaa6a 0%, #5a9a4a 100%);
 }
 
 .placement-divider {
   width: 2px;
   height: 50px;
-  background: rgba(0,0,0,0.2);
+  background: rgba(100,140,80,0.3);
   border-radius: 1px;
   align-self: center;
 }
 
 .roster-link-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
   padding: 10px 16px;
-  background: linear-gradient(180deg, #455A64 0%, #37474F 100%);
-  border: 2px solid #78909C;
-  border-radius: 12px;
-  color: white;
+  background: linear-gradient(180deg, #4a5a3a 0%, #3d4f30 100%);
+  border: 2px solid #6b8050;
+  border-radius: 10px;
+  color: #c0d0b0;
   font-size: 12px;
   font-weight: 800;
   text-transform: uppercase;
   letter-spacing: 1px;
   cursor: pointer;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,0.1),
+    0 4px 12px rgba(0,0,0,0.3);
   transition: all 0.15s;
 }
-.roster-link-btn:hover { transform: translateY(-2px); }
+.roster-link-btn:hover {
+  transform: translateY(-2px);
+  background: linear-gradient(180deg, #5a6a4a 0%, #4d5f40 100%);
+}
+.roster-link-btn svg {
+  width: 16px;
+  height: 16px;
+}
 
 .training-nav-btn {
   padding: 10px 20px;
-  background: linear-gradient(180deg, #7C4DFF 0%, #512DA8 100%);
-  border: 2px solid #B388FF;
-  border-radius: 12px;
-  color: white;
+  background: linear-gradient(180deg, #5a7a4a 0%, #3d5a30 100%);
+  border: 2px solid #7a9a60;
+  border-radius: 10px;
+  color: #d0e0c0;
   font-size: 13px;
   font-weight: 800;
   text-transform: uppercase;
   letter-spacing: 1px;
   cursor: pointer;
-  box-shadow: 0 4px 16px rgba(81,45,168,0.4);
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,0.1),
+    0 4px 16px rgba(0,0,0,0.3);
   transition: all 0.15s;
 }
 .training-nav-btn:hover {
   transform: translateY(-2px);
-  box-shadow: 0 6px 20px rgba(81,45,168,0.5);
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,0.15),
+    0 6px 20px rgba(0,0,0,0.4);
 }
 
 .battle-btn {
@@ -243,18 +308,29 @@
   text-transform: uppercase;
   letter-spacing: 2px;
   cursor: pointer;
-  box-shadow: 0 6px 20px rgba(204, 34, 34, 0.5);
+  box-shadow:
+    inset 0 2px 0 rgba(255,255,255,0.3),
+    inset 0 -2px 0 rgba(0,0,0,0.2),
+    0 6px 20px rgba(204, 34, 34, 0.5);
   transition: all 0.15s ease;
   text-shadow: 0 2px 4px rgba(0,0,0,0.5);
+  font-family: 'Arial Black', 'Impact', sans-serif;
 }
 
 .battle-btn:hover {
   transform: translateY(-2px) scale(1.03);
-  box-shadow: 0 8px 24px rgba(204, 34, 34, 0.6);
+  box-shadow:
+    inset 0 2px 0 rgba(255,255,255,0.35),
+    inset 0 -2px 0 rgba(0,0,0,0.2),
+    0 8px 24px rgba(204, 34, 34, 0.6);
 }
 
 .battle-btn:active {
   transform: translateY(1px);
+  box-shadow:
+    inset 0 2px 0 rgba(0,0,0,0.1),
+    inset 0 -1px 0 rgba(255,255,255,0.1),
+    0 2px 8px rgba(204, 34, 34, 0.4);
 }
 
 .next-round-btn {
@@ -268,9 +344,13 @@
   text-transform: uppercase;
   letter-spacing: 2px;
   cursor: pointer;
-  box-shadow: 0 6px 20px rgba(46, 125, 50, 0.5);
+  box-shadow:
+    inset 0 2px 0 rgba(255,255,255,0.25),
+    inset 0 -2px 0 rgba(0,0,0,0.15),
+    0 6px 20px rgba(46, 125, 50, 0.5);
   transition: all 0.15s ease;
   text-shadow: 0 2px 4px rgba(0,0,0,0.5);
+  font-family: 'Arial Black', 'Impact', sans-serif;
 }
 
 .next-round-btn:hover {
@@ -288,9 +368,13 @@
   text-transform: uppercase;
   letter-spacing: 2px;
   cursor: pointer;
-  box-shadow: 0 6px 20px rgba(230, 81, 0, 0.5);
+  box-shadow:
+    inset 0 2px 0 rgba(255,255,255,0.25),
+    inset 0 -2px 0 rgba(0,0,0,0.15),
+    0 6px 20px rgba(230, 81, 0, 0.5);
   transition: all 0.15s ease;
   text-shadow: 0 2px 4px rgba(0,0,0,0.5);
+  font-family: 'Arial Black', 'Impact', sans-serif;
 }
 
 .retry-btn:hover {
@@ -322,6 +406,7 @@
   letter-spacing: 4px;
   animation: bannerPop 0.5s ease-out;
   -webkit-text-stroke: 2px rgba(0,0,0,0.3);
+  font-family: 'Arial Black', 'Impact', sans-serif;
 }
 
 .phase-banner.round {

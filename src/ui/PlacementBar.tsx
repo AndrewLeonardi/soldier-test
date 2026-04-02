@@ -1,6 +1,7 @@
 import { useGameStore } from '../store'
 import { useRosterStore } from '../rosterStore'
-import { PLACEMENT_OPTIONS, WEAPON_ICONS, WEAPON_COSTS, SoldierProfile } from '../types'
+import { PLACEMENT_OPTIONS, WEAPON_COSTS, SoldierProfile } from '../types'
+import { WEAPON_ICON_COMPONENTS, PlacementIcon, RotateIcon, SquadIcon } from './ToyIcons'
 
 export function PlacementBar() {
   const phase = useGameStore(s => s.phase)
@@ -25,6 +26,10 @@ export function PlacementBar() {
   const defenseOptions = PLACEMENT_OPTIONS.filter(o => o.type !== 'soldier')
 
   const rotIdx = Math.round(placementRotation / (Math.PI / 2)) % 4
+  const WeaponIcon = ({ weapon }: { weapon: string }) => {
+    const Comp = WEAPON_ICON_COMPONENTS[weapon as keyof typeof WEAPON_ICON_COMPONENTS]
+    return Comp ? <Comp size={28} /> : null
+  }
 
   return (
     <div className="placement-bar">
@@ -42,7 +47,7 @@ export function PlacementBar() {
               selectPlacement(isSelected ? null : `soldier:${soldier.id}` as any)
             }}
           >
-            <span className="placement-card-icon">{WEAPON_ICONS[soldier.equippedWeapon]}</span>
+            <span className="placement-card-icon"><WeaponIcon weapon={soldier.equippedWeapon} /></span>
             <span className="placement-card-name">{soldier.name}</span>
             <span className="placement-card-cost">
               <span className="coin" />
@@ -70,7 +75,7 @@ export function PlacementBar() {
               selectPlacement(isSelected ? null : opt.type)
             }}
           >
-            <span className="placement-card-icon">{opt.icon}</span>
+            <span className="placement-card-icon"><PlacementIcon type={opt.type} size={28} /></span>
             <span className="placement-card-name">{opt.label}</span>
             <span className="placement-card-cost">
               <span className="coin" />
@@ -84,17 +89,17 @@ export function PlacementBar() {
       {selectedPlacement && (
         <div className="placement-card rotate-card" onClick={rotatePlacement}>
           <span className="placement-card-icon" style={{ transform: `rotate(${rotIdx * 90}deg)` }}>
-            {'\u27A1'}
+            <RotateIcon size={24} />
           </span>
           <span className="placement-card-name">Rotate</span>
-          <span className="placement-card-cost" style={{ color: '#666', fontSize: '10px' }}>
+          <span className="placement-card-cost" style={{ color: '#8a9a7a', fontSize: '10px' }}>
             [R] key
           </span>
         </div>
       )}
 
       <button className="roster-link-btn" onClick={() => { window.location.hash = '#/roster' }}>
-        {'\u{1F465}'} Squad
+        <SquadIcon size={16} /> Squad
       </button>
 
       <button className="battle-btn" onClick={startBattle}>

@@ -1,5 +1,6 @@
-import { SoldierProfile, WeaponType, WEAPON_ICONS } from '../types'
+import { SoldierProfile, WeaponType } from '../types'
 import { useRosterStore } from '../rosterStore'
+import { SoldierIcon, WEAPON_ICON_COMPONENTS, TrainIcon, CheckIcon } from '../ui/ToyIcons'
 
 const WEAPON_LABELS: Record<WeaponType, string> = {
   rifle: 'Rifle',
@@ -18,6 +19,8 @@ export function SoldierCard({ soldier }: SoldierCardProps) {
     k => soldier.skills[k as WeaponType]
   ) as WeaponType[]
 
+  const WeaponBadge = WEAPON_ICON_COMPONENTS[soldier.equippedWeapon]
+
   return (
     <div className={`roster-card ${isInjured ? 'injured' : ''}`}>
       {/* Status badge */}
@@ -27,8 +30,8 @@ export function SoldierCard({ soldier }: SoldierCardProps) {
 
       {/* Soldier icon / avatar */}
       <div className="roster-avatar">
-        <span className="roster-avatar-icon">{'\u{1F482}'}</span>
-        <span className="roster-weapon-badge">{WEAPON_ICONS[soldier.equippedWeapon]}</span>
+        <div className="roster-avatar-icon"><SoldierIcon size={40} /></div>
+        <span className="roster-weapon-badge"><WeaponBadge size={18} /></span>
       </div>
 
       {/* Name */}
@@ -38,6 +41,7 @@ export function SoldierCard({ soldier }: SoldierCardProps) {
       <div className="roster-skills">
         {trainedSkills.map(skill => {
           const isEquipped = soldier.equippedWeapon === skill
+          const SkillIcon = WEAPON_ICON_COMPONENTS[skill]
           return (
             <button
               key={skill}
@@ -45,9 +49,9 @@ export function SoldierCard({ soldier }: SoldierCardProps) {
               onClick={() => equipWeapon(soldier.id, skill)}
               title={`Equip ${WEAPON_LABELS[skill]}`}
             >
-              <span>{WEAPON_ICONS[skill]}</span>
+              <span className="skill-icon-wrap"><SkillIcon size={14} /></span>
               <span className="skill-label">{WEAPON_LABELS[skill]}</span>
-              {isEquipped && <span className="equipped-check">{'\u2713'}</span>}
+              {isEquipped && <span className="equipped-check"><CheckIcon size={10} /></span>}
             </button>
           )
         })}
@@ -68,7 +72,7 @@ export function SoldierCard({ soldier }: SoldierCardProps) {
           }}
           disabled={isInjured}
         >
-          {'\u{1F9E0}'} Train Skill
+          <TrainIcon size={14} /> Train Skill
         </button>
       </div>
     </div>
