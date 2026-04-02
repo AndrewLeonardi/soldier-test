@@ -267,37 +267,58 @@ export function poseHit(p, age) {
 }
 
 export function poseDeath(p, progress) {
+  // IMPORTANT: Never rotate p.root — that pushes the mesh below ground.
+  // Only animate body parts (spine, limbs, head) which stay above the base plate.
   p.root.position.y = 0
-  if (progress < 0.15) {
-    const t = progress / 0.15
-    const stagger = t * t
-    p.spine.rotation.x = stagger * 0.4; p.spine.rotation.z = stagger * 0.05
-    p.headGrp.rotation.x = stagger * 0.3
-    p.leftArm.rotation.x = stagger * 0.5; p.rightArm.rotation.x = stagger * 0.3
+  p.root.rotation.x = 0
+  p.root.rotation.z = 0
+
+  if (progress < 0.2) {
+    // Phase 1: stagger backward
+    const t = progress / 0.2
+    const ease = t * t
+    p.spine.rotation.x = ease * 0.5
+    p.spine.rotation.z = ease * 0.1
+    p.headGrp.rotation.x = ease * 0.4
+    p.headGrp.rotation.y = 0
+    p.leftArm.rotation.x = ease * 0.6; p.leftArm.rotation.z = ease * 0.3
+    p.rightArm.rotation.x = ease * 0.4; p.rightArm.rotation.z = -ease * 0.2
+    p.leftElbow.rotation.x = -ease * 0.3
+    p.rightElbow.rotation.x = -ease * 0.2
     p.leftLeg.rotation.x = 0; p.rightLeg.rotation.x = 0
-    p.leftKnee.rotation.x = -stagger * 0.2; p.rightKnee.rotation.x = -stagger * 0.15
-    p.root.rotation.z = 0; p.root.rotation.x = 0
-  } else if (progress < 0.4) {
-    const t = (progress - 0.15) / 0.25
+    p.leftKnee.rotation.x = -ease * 0.3; p.rightKnee.rotation.x = -ease * 0.2
+    p.hips.position.y = 0.52
+  } else if (progress < 0.5) {
+    // Phase 2: knees buckle, collapse downward
+    const t = (progress - 0.2) / 0.3
     const ease = t * t * (3 - 2 * t)
-    p.spine.rotation.x = 0.4 - ease * 0.1; p.spine.rotation.z = ease * 0.1
-    p.headGrp.rotation.x = 0.3 + ease * 0.2
-    p.leftArm.rotation.x = 0.5 + ease * 0.3; p.leftArm.rotation.z = ease * 0.5
-    p.rightArm.rotation.x = 0.3 + ease * 0.2; p.rightArm.rotation.z = -ease * 0.3
-    p.leftLeg.rotation.x = -ease * 0.3; p.leftKnee.rotation.x = -0.2 - ease * 0.4
-    p.rightLeg.rotation.x = ease * 0.15; p.rightKnee.rotation.x = -0.15 - ease * 0.3
-    p.root.rotation.z = ease * 0.15; p.root.rotation.x = ease * 0.1
+    p.spine.rotation.x = 0.5 + ease * 0.3
+    p.spine.rotation.z = 0.1 + ease * 0.15
+    p.headGrp.rotation.x = 0.4 + ease * 0.3
+    p.headGrp.rotation.y = ease * 0.1
+    p.leftArm.rotation.x = 0.6 + ease * 0.2; p.leftArm.rotation.z = 0.3 + ease * 0.5
+    p.rightArm.rotation.x = 0.4 + ease * 0.3; p.rightArm.rotation.z = -0.2 - ease * 0.4
+    p.leftElbow.rotation.x = -0.3 - ease * 0.5
+    p.rightElbow.rotation.x = -0.2 - ease * 0.4
+    p.leftLeg.rotation.x = -ease * 0.4; p.leftKnee.rotation.x = -0.3 - ease * 0.6
+    p.rightLeg.rotation.x = ease * 0.2; p.rightKnee.rotation.x = -0.2 - ease * 0.5
+    // Hips drop as knees buckle
+    p.hips.position.y = 0.52 - ease * 0.25
   } else {
-    const t = (progress - 0.4) / 0.6
+    // Phase 3: slump forward, arms go limp
+    const t = (progress - 0.5) / 0.5
     const ease = 1 - Math.pow(1 - t, 3)
-    p.root.rotation.z = 0.15 + ease * (Math.PI / 2 * 0.85 - 0.15)
-    p.root.rotation.x = 0.1 + ease * 0.15
-    p.spine.rotation.x = 0.3 + ease * 0.1; p.spine.rotation.z = 0.1 - ease * 0.05
-    p.headGrp.rotation.x = 0.5 + ease * 0.3; p.headGrp.rotation.y = ease * 0.15
-    p.leftArm.rotation.z = 0.5 + ease * 0.8; p.leftArm.rotation.x = 0.8 - ease * 0.3
-    p.rightArm.rotation.z = -0.3 - ease * 0.6; p.rightArm.rotation.x = 0.5 - ease * 0.2
-    p.leftLeg.rotation.x = -0.3 + ease * 0.1; p.rightLeg.rotation.x = 0.15 + ease * 0.1
-    p.leftKnee.rotation.x = -0.6 + ease * 0.2; p.rightKnee.rotation.x = -0.45 + ease * 0.1
+    p.spine.rotation.x = 0.8 + ease * 0.4
+    p.spine.rotation.z = 0.25 - ease * 0.1
+    p.headGrp.rotation.x = 0.7 + ease * 0.3
+    p.headGrp.rotation.y = 0.1 + ease * 0.1
+    p.leftArm.rotation.x = 0.8; p.leftArm.rotation.z = 0.8 + ease * 0.3
+    p.rightArm.rotation.x = 0.7; p.rightArm.rotation.z = -0.6 - ease * 0.3
+    p.leftElbow.rotation.x = -0.8 - ease * 0.2
+    p.rightElbow.rotation.x = -0.6 - ease * 0.3
+    p.leftLeg.rotation.x = -0.4; p.leftKnee.rotation.x = -0.9
+    p.rightLeg.rotation.x = 0.2; p.rightKnee.rotation.x = -0.7
+    p.hips.position.y = 0.27
   }
 }
 

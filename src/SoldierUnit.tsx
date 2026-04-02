@@ -51,37 +51,39 @@ export function SoldierUnit({ unit }: SoldierUnitProps) {
     const t = elapsedRef.current
     const parts = soldier.parts
 
-    // State flags
-    const isDead = unit.state === 'dead'
-    const deathSettled = isDead && unit.stateAge > 1.2 && unit.position[1] < 0.15 && unit.spinSpeed < 0.2
-
-    // Position
+    // Position — always clamp above ground
     const isAirborne = unit.position[1] > 0.1 || Math.abs(unit.velocity[1]) > 0.5
     const lerpSpeed = isAirborne ? 20 : 8
     const target = new THREE.Vector3(unit.position[0], Math.max(0, unit.position[1]), unit.position[2])
     groupRef.current.position.lerp(target, Math.min(1, delta * lerpSpeed))
+    if (groupRef.current.position.y < 0) groupRef.current.position.y = 0
 
-    // Rotation
-    if (deathSettled) {
-      // Dead on ground: lay flat on side, no more spinning
-      // Smoothly settle to a tipped-over pose via the GROUP rotation
-      groupRef.current.rotation.z = THREE.MathUtils.lerp(groupRef.current.rotation.z, Math.PI / 2 * 0.85, delta * 3)
-      groupRef.current.rotation.x = THREE.MathUtils.lerp(groupRef.current.rotation.x, 0.1, delta * 3)
-      tumbleRef.current.rx = groupRef.current.rotation.x
-      tumbleRef.current.rz = groupRef.current.rotation.z
-    } else if (unit.spinSpeed > 0.1) {
-      // Ragdolling in the air or just launched
+    // Rotation — ragdoll tumble only when airborne with spin
+    const isGrounded = unit.position[1] < 0.05
+    if (unit.spinSpeed > 0.1 && !isGrounded) {
+      // Airborne tumble
       tumbleRef.current.rx += unit.spinSpeed * delta * 3
       tumbleRef.current.rz += unit.spinSpeed * delta * 2.3
       groupRef.current.rotation.x = tumbleRef.current.rx
       groupRef.current.rotation.z = tumbleRef.current.rz
       groupRef.current.rotation.y += unit.spinSpeed * delta * 0.5
-    } else {
-      // Normal: face target direction
+    } else if (isGrounded) {
+      // On ground: settle rotation back to upright (x=0, z=0)
+      tumbleRef.current.rx *= 0.85
+      tumbleRef.current.rz *= 0.85
+      if (Math.abs(tumbleRef.current.rx) < 0.02) tumbleRef.current.rx = 0
+      if (Math.abs(tumbleRef.current.rz) < 0.02) tumbleRef.current.rz = 0
+      groupRef.current.rotation.x = tumbleRef.current.rx
+      groupRef.current.rotation.z = tumbleRef.current.rz
+      // Face direction
       const targetRot = unit.facingAngle
       groupRef.current.rotation.y = THREE.MathUtils.lerp(groupRef.current.rotation.y, targetRot, Math.min(1, delta * 6))
-      tumbleRef.current.rx *= 0.9
-      tumbleRef.current.rz *= 0.9
+    } else {
+      // Normal (no spin, not grounded — falling)
+      const targetRot = unit.facingAngle
+      groupRef.current.rotation.y = THREE.MathUtils.lerp(groupRef.current.rotation.y, targetRot, Math.min(1, delta * 6))
+      tumbleRef.current.rx *= 0.95
+      tumbleRef.current.rz *= 0.95
       groupRef.current.rotation.x = tumbleRef.current.rx
       groupRef.current.rotation.z = tumbleRef.current.rz
     }
@@ -95,8 +97,8 @@ export function SoldierUnit({ unit }: SoldierUnitProps) {
     // Pose — weapon-aware
     const isRocket = unit.equippedWeapon === 'rocketLauncher'
 
-    const isRagdolling = unit.spinSpeed > 0.1 && !deathSettled
-    if (!isRagdolling && !deathSettled) {
+    const isRagdolling = unit.spinSpeed > 0.1 && !isGrounded
+    if (!isRagdolling) {
       switch (unit.state) {
         case 'idle':
           if (isRocket) poseRocketKneel(parts, t)
