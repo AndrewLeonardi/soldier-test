@@ -51,25 +51,27 @@ export function SoldierUnit({ unit }: SoldierUnitProps) {
     const t = elapsedRef.current
     const parts = soldier.parts
 
-    // Position — offset Y up when dead so the toppled body doesn't clip through ground
+    // Position
     const isAirborne = unit.position[1] > 0.1 || Math.abs(unit.velocity[1]) > 0.5
     const lerpSpeed = isAirborne ? 20 : 8
-    const isDead = unit.state === 'dead' && unit.stateAge > 0.5
-    const yOffset = isDead && unit.position[1] < 0.1 ? 0.15 : 0
-    const target = new THREE.Vector3(unit.position[0], unit.position[1] + yOffset, unit.position[2])
+    // Dead soldiers on the ground get raised so the toppled body + base plate sits above ground
+    const isDead = unit.state === 'dead'
+    const deathSettled = isDead && unit.stateAge > 1.0 && unit.position[1] < 0.1
+    const yOffset = deathSettled ? 0.4 : 0
+    const target = new THREE.Vector3(unit.position[0], Math.max(0, unit.position[1]) + yOffset, unit.position[2])
     groupRef.current.position.lerp(target, Math.min(1, delta * lerpSpeed))
 
-    // Clamp to ground — never let the visual go below y=0
-    if (groupRef.current.position.y < 0) groupRef.current.position.y = 0
-
     // Rotation
-    const isRagdolling = unit.spinSpeed > 0.1
+    const isRagdolling = unit.spinSpeed > 0.1 && !(deathSettled)
     if (isRagdolling) {
       tumbleRef.current.rx += unit.spinSpeed * delta * 3
       tumbleRef.current.rz += unit.spinSpeed * delta * 2.3
       groupRef.current.rotation.x = tumbleRef.current.rx
       groupRef.current.rotation.z = tumbleRef.current.rz
       groupRef.current.rotation.y += unit.spinSpeed * delta * 0.5
+    } else if (deathSettled) {
+      // Dead and on ground — freeze rotation, don't keep spinning
+      // Just keep whatever rotation they ended up at
     } else {
       const targetRot = unit.facingAngle
       groupRef.current.rotation.y = THREE.MathUtils.lerp(groupRef.current.rotation.y, targetRot, Math.min(1, delta * 6))

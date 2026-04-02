@@ -355,8 +355,12 @@ export function Battlefield() {
         unit.velocity[1] = 0
         unit.velocity[2] = 0
         unit.position[1] = 0
-        unit.spinSpeed *= 0.9
-        if (unit.spinSpeed < 0.05) unit.spinSpeed = 0
+        unit.spinSpeed = 0
+      }
+      // Dead units on ground — always kill spin quickly
+      if (unit.state === 'dead' && unit.position[1] <= 0.01) {
+        unit.spinSpeed *= 0.85
+        if (unit.spinSpeed < 0.1) unit.spinSpeed = 0
       }
     }
 
