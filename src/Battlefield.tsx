@@ -321,46 +321,48 @@ export function Battlefield() {
     const GRAV = -15
     for (const unit of [...players, ...enemyUnits]) {
       const hasVel = Math.abs(unit.velocity[0]) > 0.01 || Math.abs(unit.velocity[1]) > 0.01 || Math.abs(unit.velocity[2]) > 0.01
-      if (!hasVel && unit.position[1] <= 0.01) continue
+      const isAboveGround = unit.position[1] > 0.01
+      if (!hasVel && !isAboveGround) continue
 
-      // Apply gravity
-      unit.velocity[1] += GRAV * delta
+      // Gravity (only when above ground)
+      if (unit.position[1] > 0 || unit.velocity[1] > 0) {
+        unit.velocity[1] += GRAV * delta
+      }
 
-      // Integrate position
+      // Integrate
       unit.position[0] += unit.velocity[0] * delta
       unit.position[1] += unit.velocity[1] * delta
       unit.position[2] += unit.velocity[2] * delta
 
-      // Ground collision — hard clamp, never go below 0
-      if (unit.position[1] < 0) {
+      // ── HARD GROUND CLAMP — this is the critical fix ──
+      if (unit.position[1] <= 0) {
         unit.position[1] = 0
-        // Bounce (small)
-        if (Math.abs(unit.velocity[1]) > 0.5) {
-          unit.velocity[1] *= -0.25
+        if (unit.velocity[1] < -0.5) {
+          unit.velocity[1] *= -0.2 // tiny bounce
         } else {
           unit.velocity[1] = 0
         }
-        unit.velocity[0] *= 0.7
-        unit.velocity[2] *= 0.7
-        unit.spinSpeed *= 0.5
+        // Ground friction
+        unit.velocity[0] *= 0.8
+        unit.velocity[2] *= 0.8
+        unit.spinSpeed *= 0.7
       }
 
       // Air drag
       unit.velocity[0] *= 0.993
       unit.velocity[2] *= 0.993
 
-      // Stop if barely moving on ground
-      if (unit.position[1] <= 0.01 && Math.abs(unit.velocity[0]) < 0.1 && Math.abs(unit.velocity[2]) < 0.1 && Math.abs(unit.velocity[1]) < 0.1) {
+      // Stop when slow on ground
+      if (unit.position[1] <= 0 && Math.abs(unit.velocity[0]) < 0.05 && Math.abs(unit.velocity[2]) < 0.05) {
         unit.velocity[0] = 0
         unit.velocity[1] = 0
         unit.velocity[2] = 0
         unit.position[1] = 0
-        unit.spinSpeed = 0
       }
-      // Dead units on ground — always kill spin quickly
-      if (unit.state === 'dead' && unit.position[1] <= 0.01) {
-        unit.spinSpeed *= 0.85
-        if (unit.spinSpeed < 0.1) unit.spinSpeed = 0
+      // Dead on ground: kill spin fast
+      if (unit.state === 'dead' && unit.position[1] <= 0) {
+        unit.spinSpeed *= 0.8
+        if (unit.spinSpeed < 0.05) unit.spinSpeed = 0
       }
     }
 
